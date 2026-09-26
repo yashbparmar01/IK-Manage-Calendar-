@@ -10559,8 +10559,26 @@ function showDiag(){
 
 // ── DATABASE LAYER (Supabase - InfiniKraft) ───────────────
 const SB_URL = window.IK_SUPABASE_URL || "https://onhjejovstvcjqxehaix.supabase.co";
-const SB_KEY = window.IK_SUPABASE_KEY || "sb_publishable_6ng_3jnvQbJUZifYTxmRrw_0yhCZuY9";
-const sb = window.supabase.createClient(SB_URL, SB_KEY);
+const SB_KEY = window.IK_SUPABASE_KEY || 
+  (function(){
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const urlKey = q.get("ik_key") || q.get("supabase_key");
+      if(urlKey){ localStorage.setItem("ik_supabase_key", urlKey); return urlKey; }
+      return localStorage.getItem("ik_supabase_key") || "";
+    }catch(e){ return ""; }
+  })() || 
+  "sb_publishable_6ng_3jnvQbJUZifYTxmRrw_0yhCZuY9";
+
+// Robust Supabase client initialization with explicit session persistence and URL token detection
+const sb = window.supabase.createClient(SB_URL, SB_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storage: window.localStorage
+  }
+});
 let ME = { role: "pending", app_role: "pending", brand_id: null, email: "", status: "PENDING", capsOk: false, capsErr: "" };
 
 /* ══ v57.4 — AN OUT-OF-DATE PAGE DOES NOT GET TO WRITE ════════════════
@@ -10788,6 +10806,21 @@ const canEdit=()=>can("create");
 /* ══ INFINIKRAFT AUTHENTICATION & ACCESS ENGINE ══════════════════════ */
 let OTP_COUNTDOWN_TIMER = null;
 
+// Check immediately for OAuth errors in the URL
+(function checkOAuthUrlErrors(){
+  try {
+    const searchParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams((window.location.hash || "").replace(/^#/, ""));
+    const err = searchParams.get("error") || hashParams.get("error");
+    const errDesc = searchParams.get("error_description") || hashParams.get("error_description") || searchParams.get("message");
+    if(err || errDesc){
+      setTimeout(() => {
+        authMsg(errDesc || ("Authentication failed: " + err), "err");
+      }, 100);
+    }
+  } catch(e){}
+})();
+
 function authMsg(t, kind="err"){
   const el = document.getElementById("auth-msg");
   if(el){ el.textContent = t||""; el.style.color = kind === "err" ? "var(--acc)" : "var(--text)"; }
@@ -10802,21 +10835,23 @@ function setOtpMsg(t, kind="err"){
 
 const ADMIN_EMAIL = "ninjafuryofficial@gmail.com";
 
-function showAuthView(viewName){
+function showAuthView(viewName, preserveMsg = false){
   document.getElementById("auth-screen").style.display = "flex";
   const views = ["login", "otp", "pending", "rejected", "disabled", "admin-login"];
   views.forEach(v => {
     const el = document.getElementById("auth-view-" + v);
     if(el) el.style.display = (v === viewName) ? "block" : "none";
   });
-  authMsg("");
-  setOtpMsg("");
-  const admMsg = document.getElementById("admin-auth-msg");
-  if(admMsg) admMsg.textContent = "";
+  if(!preserveMsg){
+    authMsg("");
+    setOtpMsg("");
+    const admMsg = document.getElementById("admin-auth-msg");
+    if(admMsg) admMsg.textContent = "";
+  }
   if(viewName === "admin-login"){
     window.location.hash = "admin";
   } else if(viewName === "login" && window.location.hash === "#admin"){
-    history.replaceState(null, "", window.location.pathname);
+    history.replaceState(null, "", window.location.pathname + window.location.search);
   }
 }
 
@@ -10829,16 +10864,21 @@ async function signInGoogle(isAdminIntent = false){
     try{ sessionStorage.removeItem("ik_admin_intent"); }catch(e){}
     authMsg("Redirecting to Google…", "info");
   }
+
+  // Consistent OAuth redirect URL for GitHub Pages
+  const redirectUrl = window.location.origin + window.location.pathname;
+
   const { error } = await sb.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: location.origin + location.pathname,
+      redirectTo: redirectUrl,
       queryParams: {
         access_type: "offline",
         prompt: "select_account"
       }
     }
   });
+
   if(error){
     if(isAdminIntent){
       const admMsg = document.getElementById("admin-auth-msg");
@@ -10958,7 +10998,7 @@ async function verifyOtp(){
     }
     
     setOtpMsg("Verified! Checking access approval…", "success");
-    setTimeout(() => { boot(); }, 400);
+    setTimeout(() => { boot(session, "OTP_VERIFIED"); }, 400);
   } catch(err){
     if(verifyBtn) verifyBtn.disabled = false;
     setOtpMsg("Network error during verification. Please try again.", "err");
@@ -10967,11 +11007,12 @@ async function verifyOtp(){
 
 async function checkApprovalStatus(){
   toast("Checking approval status…");
-  await boot();
+  await boot(null, "CHECK_APPROVAL");
 }
 
 async function signOut(){
   if(OTP_COUNTDOWN_TIMER) clearInterval(OTP_COUNTDOWN_TIMER);
+  try{ sessionStorage.removeItem("ik_admin_intent"); }catch(e){}
   await sb.auth.signOut();
   location.reload();
 }
@@ -10994,6 +11035,7 @@ async function openAdminPanel(){
     return;
   }
   
+  window.location.hash = "admin";
   openM("admin-panel");
   await loadAdminUsers();
 }
@@ -17053,23 +17095,32 @@ async function maybeWriteDailyBackupForce(){
   finally{ lastBackupAt=real; }
 }
 
-async function boot(){
-  const { data: { session } } = await sb.auth.getSession();
+let IS_BOOTING = false;
+
+async function boot(providedSession = null, sourceEvent = "BOOT_MANUAL"){
+
+  let session = providedSession;
+  if(!session){
+    const { data, error: sessErr } = await sb.auth.getSession();
+    session = data?.session || null;
+  }
+
   if(!session || !session.user){
-    if(window.location.hash === "#admin"){
-      showAuthView("admin-login");
-    } else {
-      showAuthView("login");
-    }
+    let adminIntent = false;
+    try {
+      adminIntent = sessionStorage.getItem("ik_admin_intent") === "1" || window.location.hash === "#admin";
+    } catch(e){}
+    showAuthView(adminIntent ? "admin-login" : "login");
     return;
   }
   
   const userEmail = (session.user.email || "").toLowerCase().trim();
+  const isAuthorizedAdminEmail = (userEmail === "ninjafuryofficial@gmail.com");
   
   // 1. Strict Server & Client Gmail enforcement
   if(!userEmail.endsWith("@gmail.com")){
     await sb.auth.signOut();
-    showAuthView("login");
+    showAuthView("login", true);
     authMsg("Access restricted: Only @gmail.com accounts are permitted.");
     return;
   }
@@ -17078,34 +17129,62 @@ async function boot(){
   try {
     adminIntent = sessionStorage.getItem("ik_admin_intent") === "1" || window.location.hash === "#admin";
   } catch(e){}
-  
-  // 2. Check if this is the EXACT authorized Admin Google account
-  const isAuthorizedAdminEmail = (userEmail === "ninjafuryofficial@gmail.com");
 
   // If user signed in through Admin Login, but is NOT ninjafuryofficial@gmail.com:
   if(adminIntent && !isAuthorizedAdminEmail){
     try{ sessionStorage.removeItem("ik_admin_intent"); }catch(e){}
     await sb.auth.signOut();
-    showAuthView("admin-login");
+    showAuthView("admin-login", true);
     const admMsg = document.getElementById("admin-auth-msg");
     if(admMsg) admMsg.textContent = "This Google account is not authorized for Admin access.";
     return;
   }
-  
-  // 3. Hydrate or fetch profile from Supabase
-  let { data: prof, error } = await sb
+
+  // 2. Hydrate or fetch profile from Supabase
+  let { data: prof, error: profErr } = await sb
     .from("profiles")
     .select("id, role, app_role, brand_id, email, emoji, status, otp_verified")
     .eq("id", session.user.id)
     .maybeSingle();
-    
-  if(error && error.code !== "PGRST116"){
-    authMsg(error.message);
-    showAuthView("login");
+
+  if(profErr && profErr.code !== "PGRST116"){
+    const isAdm = adminIntent || isAuthorizedAdminEmail;
+    showAuthView(isAdm ? "admin-login" : "login", true);
+    if(isAdm){
+      const admMsg = document.getElementById("admin-auth-msg");
+      if(admMsg) admMsg.textContent = "Profile error: " + profErr.message;
+    } else {
+      authMsg("Profile error: " + profErr.message, "err");
+    }
     return;
   }
-  
-  if(!prof){
+
+  // 3. Auto-provision or update Admin / Normal profile
+  if(isAuthorizedAdminEmail){
+    if(!prof || prof.role !== "admin" || prof.app_role !== "admin" || prof.status !== "APPROVED" || !prof.otp_verified){
+      const upsertRes = await sb.from("profiles").upsert({
+        id: session.user.id,
+        email: userEmail,
+        display_name: (session.user.user_metadata?.full_name || session.user.user_metadata?.name || "Admin").trim(),
+        avatar_url: session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "",
+        role: "admin",
+        app_role: "admin",
+        status: "APPROVED",
+        otp_verified: true,
+        all_brands: true
+      }).select().maybeSingle();
+
+      prof = upsertRes.data || {
+        id: session.user.id,
+        email: userEmail,
+        role: "admin",
+        app_role: "admin",
+        status: "APPROVED",
+        otp_verified: true,
+        all_brands: true
+      };
+    }
+  } else if(!prof){
     const initName = (session.user.user_metadata?.full_name || session.user.user_metadata?.name || userEmail.split("@")[0] || "").trim();
     const initAvatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "";
     const insertRes = await sb.from("profiles").upsert({
@@ -17113,27 +17192,27 @@ async function boot(){
       email: userEmail,
       display_name: initName,
       avatar_url: initAvatar,
-      role: isAuthorizedAdminEmail ? "admin" : "pending",
-      app_role: isAuthorizedAdminEmail ? "admin" : "pending",
-      status: isAuthorizedAdminEmail ? "APPROVED" : "PENDING",
-      otp_verified: isAuthorizedAdminEmail,
-      all_brands: isAuthorizedAdminEmail
+      role: "pending",
+      app_role: "pending",
+      status: "PENDING",
+      otp_verified: false,
+      all_brands: false
     }).select().maybeSingle();
-    
+
     prof = insertRes.data || {
       id: session.user.id,
       email: userEmail,
-      role: isAuthorizedAdminEmail ? "admin" : "pending",
-      app_role: isAuthorizedAdminEmail ? "admin" : "pending",
-      status: isAuthorizedAdminEmail ? "APPROVED" : "PENDING",
-      otp_verified: isAuthorizedAdminEmail
+      role: "pending",
+      app_role: "pending",
+      status: "PENDING",
+      otp_verified: false
     };
   }
 
-  // 4. Verify Admin authorization from database
-  const isAdmin = isAuthorizedAdminEmail && (prof.role === "admin" || prof.app_role === "admin") && prof.status === "APPROVED";
-  
-  // 5. Email OTP Verification Requirement (Normal users only; Admin does NOT use OTP)
+  // 4. Admin authorization
+  const isAdmin = isAuthorizedAdminEmail;
+
+  // 5. Normal users: OTP Verification Gate (Admin does NOT use OTP)
   if(!isAdmin && !prof.otp_verified){
     showAuthView("otp");
     const emailEl = document.getElementById("otp-user-email");
@@ -17141,10 +17220,9 @@ async function boot(){
     sendOtp(false);
     return;
   }
-  
-  // 6. Approval Status Gate (Normal users only)
+
+  // 6. Normal users: Approval Status Gate
   const userStatus = (prof.status || "PENDING").toUpperCase();
-  
   if(!isAdmin){
     if(userStatus === "PENDING"){
       const pendEmail = document.getElementById("pending-user-email");
@@ -17169,44 +17247,45 @@ async function boot(){
       return;
     }
   }
-  
-  // 7. User is Approved or Admin: Grant full application access
+
+  // 7. Approved user or Admin: Grant full application access
+
   document.getElementById("auth-screen").style.display = "none";
   ME = {
     id: session.user.id,
-    role: prof.role,
-    app_role: prof.app_role,
+    role: prof.role || (isAdmin ? "admin" : "client"),
+    app_role: prof.app_role || (isAdmin ? "admin" : "client"),
     brand_id: prof.brand_id,
     email: prof.email || session.user.email,
     emoji: prof.emoji || "",
     status: userStatus
   };
-  
-  await resolveAccess(session.user.id, prof.role);
+
+  await resolveAccess(session.user.id, ME.role);
   applyRoleUI();
-  
+
   if(isAdmin){
     loadAdminBadge();
-    if(adminIntent || window.location.hash === "#admin"){
-      openAdminPanel();
-    }
+    // Open Admin Panel directly and ensure URL hash is #admin so full page reload returns to Admin Panel
+    openAdminPanel();
+    window.location.hash = "admin";
   }
   try{ sessionStorage.removeItem("ik_admin_intent"); }catch(e){}
-  
+
   loadSuiteTools().then(list => {
     SUITE.mine = suiteToolsForMe(list).length;
     applyMenuVisibility();
   });
-  
+
   const ae = document.getElementById("acct-email"); if(ae) ae.textContent = ME.email || "";
   logAppEvent("sign_in", { role: ME.role, tool_role: ME.toolRole, via: ME.accessSource });
   await loadAll();
-  
+
   (async()=>{
     try{ const r = await maybeWriteDailyBackup(); BACKUP_WHY = (r && r.why) || ""; }catch(e){}
     try{ await renderBackupHealth(); }catch(e){}
   })();
-  
+
   try{ startVersionWatch(); }catch(e){}
   try{ await openDeepLink(); }catch(e){}
 }
@@ -17298,11 +17377,68 @@ const roleStyle=document.createElement("style");
 roleStyle.textContent=".role-client .ev-row-actions .ev-row-btn, .role-client .em-ev-acts, .role-client .btn-dash{display:none!important;}";
 document.head.appendChild(roleStyle);
 
-/* HELSINKI — before boot, and outside it: boot() returns early when there is
-   no session, and the sign-in screen needs this check too. */
+/* HELSINKI — Auth lifecycle restoration and state change listeners */
 try{ checkSharedStylesheet(); }catch(e){}
 
-boot();
+let authInitialized = false;
+
+// ── REGISTER SUPABASE onAuthStateChange LISTENER ───────────
+// This guarantees that after Google OAuth redirects to GitHub Pages,
+// when the session is restored from URL hash / PKCE query params,
+// boot() triggers reliably instead of failing on an empty initial sync check.
+sb.auth.onAuthStateChange(async (event, session) => {
+
+  if(event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED"){
+    if(session && session.user){
+      if(!IS_BOOTING){
+        IS_BOOTING = true;
+        authInitialized = true;
+        try {
+          await boot(session, event);
+        } finally {
+          IS_BOOTING = false;
+        }
+      }
+    } else if(event === "INITIAL_SESSION"){
+      authInitialized = true;
+      if(!IS_BOOTING){
+        let adminIntent = false;
+        try {
+          adminIntent = sessionStorage.getItem("ik_admin_intent") === "1" || window.location.hash === "#admin";
+        } catch(e){}
+        showAuthView(adminIntent ? "admin-login" : "login");
+      }
+    }
+  } else if(event === "SIGNED_OUT"){
+    authInitialized = true;
+    let adminIntent = false;
+    try {
+      adminIntent = sessionStorage.getItem("ik_admin_intent") === "1" || window.location.hash === "#admin";
+    } catch(e){}
+    showAuthView(adminIntent ? "admin-login" : "login");
+  }
+});
+
+// Fallback safety timeout in case INITIAL_SESSION was missed or delayed
+setTimeout(async () => {
+  if(!authInitialized && !IS_BOOTING){
+    const { data: { session }, error: sessErr } = await sb.auth.getSession();
+    if(session && session.user){
+      IS_BOOTING = true;
+      try {
+        await boot(session, "FALLBACK_TIMEOUT");
+      } finally {
+        IS_BOOTING = false;
+      }
+    } else {
+      let adminIntent = false;
+      try {
+        adminIntent = sessionStorage.getItem("ik_admin_intent") === "1" || window.location.hash === "#admin";
+      } catch(e){}
+      showAuthView(adminIntent ? "admin-login" : "login");
+    }
+  }
+}, 500);
 
 /* ══════════════════════════════════════════════════════════════════════
    v46 — THE POST CARD AND THE THREAD
