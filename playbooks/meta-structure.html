@@ -1,0 +1,1257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="cc-tool-version" content="V107.7 Bologna"/>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meta structure playbook — CC Marketing Calendar</title>
+
+<!-- The suite stylesheet. Linked, never copied. Everything below is built on
+     its tokens: no new colour, no new type scale, no tool-owned chrome. -->
+<link rel="stylesheet" href="../cc-suite.css">
+
+<style>
+/* ── PAGE-LOCAL ONLY ───────────────────────────────────────────────
+   A long reading page needs a few things the suite has no class for:
+   a section label, a document table, a definition card and a tag.
+   Every value here is an existing :root token or a hex already used
+   inside cc-suite.css (#2F7A46 from .brl-grp .ok, #FFF4E5 / #8A5300
+   from .cc-alarm). Nothing shared is replaced.
+   ─────────────────────────────────────────────────────────────── */
+
+html{scroll-behavior:smooth;}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
+
+.pb{padding:0 32px 60px;max-width:1100px;}
+.pb section{margin-top:44px;}
+
+/* Compact numbered steps — a short label, one line of detail, no more. */
+.pb-flow{counter-reset:s;}
+.pb-flow li{list-style:none;counter-increment:s;display:grid;
+  grid-template-columns:26px 200px 1fr;gap:14px;align-items:baseline;
+  padding:9px 0;border-bottom:1px solid #F4F4F2;font-size:13.5px;line-height:1.55;}
+.pb-flow li:last-child{border-bottom:none;}
+.pb-flow li::before{content:counter(s);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:12px;color:var(--subtle);}
+.pb-flow .lb{font-weight:700;color:var(--text);}
+.pb-flow .dt{color:var(--muted);}
+@media(max-width:768px){
+  .pb-flow li{grid-template-columns:22px 1fr;}
+  .pb-flow .dt{grid-column:2;}
+}
+
+/* Checklist — a guideline is something you work through, not something you read. */
+.pb-chk{list-style:none;padding:0;counter-reset:c;}
+.pb-chk li{counter-increment:c;border-bottom:1px solid #F4F4F2;}
+.pb-chk li:last-child{border-bottom:none;}
+.pb-chk label{display:grid;grid-template-columns:18px 24px 210px 1fr;gap:12px;
+  align-items:baseline;padding:10px 0;cursor:pointer;font-size:13.5px;line-height:1.55;}
+.pb-chk.plain label{grid-template-columns:18px 1fr;}
+.pb-chk.owned label{grid-template-columns:18px 24px 205px 1fr 56px;}
+.pb-chk .who{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  text-align:center;padding:2px 0;border-radius:20px;background:var(--surface2);
+  color:var(--muted);border:1px solid var(--div);align-self:center;}
+.pb-chk .who.cc{background:#FCEDED;color:var(--acc);border-color:transparent;}
+.pb-chk input{appearance:none;-webkit-appearance:none;width:16px;height:16px;margin:0;
+  border:1.5px solid var(--subtle);border-radius:4px;background:var(--surface);
+  cursor:pointer;position:relative;top:3px;transition:background 120ms,border-color 120ms;}
+.pb-chk input:hover{border-color:var(--muted);}
+.pb-chk input:checked{background:var(--acc);border-color:var(--acc);}
+.pb-chk input:checked::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(42deg);}
+.pb-chk .no{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--subtle);}
+.pb-chk .no::before{content:counter(c);}
+.pb-chk .lb{font-weight:700;color:var(--text);}
+.pb-chk .lb a{color:var(--acc);text-decoration:none;border-bottom:1px solid rgba(214,40,40,.28);}
+.pb-chk .lb a:hover{border-bottom-color:var(--acc);}
+.pb-chk .dt{color:var(--muted);}
+.pb-chk input:checked ~ .lb,.pb-chk input:checked ~ .dt,.pb-chk input:checked ~ .no{color:var(--subtle);}
+@media(max-width:768px){
+  .pb-chk label,.pb-chk.owned label{grid-template-columns:18px 22px 1fr;}
+  .pb-chk .dt{grid-column:3;}
+  .pb-chk .who{grid-column:3;justify-self:start;padding:2px 10px;}
+  .pb-chk.plain label{grid-template-columns:18px 1fr;}
+}
+
+.pb-tabs{margin:16px 0 4px;}
+.pb-parts{margin:0 0 26px;}
+
+.pb-mini{display:flex;flex-wrap:wrap;gap:7px;}
+.pb-mini span{font-size:12.5px;color:var(--muted);background:var(--surface2);
+  border:1px solid var(--div);border-radius:20px;padding:4px 11px;}
+.pb-menu{gap:9px;margin-bottom:8px;}
+.pb-menu a{font-size:14px;font-weight:700;color:var(--acc);text-decoration:none;
+  background:var(--surface);border:1px solid var(--div);border-radius:20px;padding:7px 16px;}
+.pb-menu a:hover{border-color:var(--acc);}
+
+.pb-more{margin-top:6px;}
+.pb-more summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--acc);
+  list-style:none;display:inline-block;}
+.pb-more summary::-webkit-details-marker{display:none;}
+.pb-more summary::after{content:" ▾";}
+.pb-more[open] summary::after{content:" ▴";}
+.pb-more .body{margin-top:7px;padding:10px 12px;background:var(--surface2);
+  border:1px solid var(--div);border-radius:9px;font-size:12.5px;line-height:1.6;}
+.pb-more .body b{color:var(--text);}
+.pb section:first-of-type{margin-top:8px;}
+
+.pb-h2{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--acc);margin-bottom:5px;}
+.pb-note{font-size:13px;color:var(--muted);max-width:68ch;margin-bottom:16px;line-height:1.6;}
+
+.pb-card{background:var(--surface);border:1px solid var(--div);border-radius:var(--rc);
+  padding:15px 17px;}
+.pb-card b{display:block;font-size:14px;font-weight:700;letter-spacing:-.01em;margin-bottom:3px;}
+.pb-card .d{font-size:13px;color:var(--muted);line-height:1.55;}
+.pb-card .m{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;
+  color:var(--muted);line-height:1.7;overflow-wrap:anywhere;}
+.pb-card.acc{border-color:var(--acc);}
+.pb-card.acc > b{color:var(--acc);}
+.pb-card.sys{border-color:var(--subtle);}
+
+.pb-grid{display:grid;gap:11px;}
+.pb-g3{grid-template-columns:repeat(3,1fr);}
+.pb-g2{grid-template-columns:repeat(2,1fr);}
+
+.pb-tier{background:var(--surface);border:1px solid var(--div);border-radius:var(--rc);
+  padding:17px 19px;}
+.pb-tier.acc{border-color:var(--acc);}
+.pb-tl{display:flex;align-items:baseline;gap:11px;margin-bottom:13px;flex-wrap:wrap;}
+.pb-tl .n{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+  color:var(--subtle);letter-spacing:.06em;}
+.pb-tl h3{font-size:16px;font-weight:700;letter-spacing:-.015em;}
+.pb-tier.acc .pb-tl h3{color:var(--acc);}
+.pb-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
+  color:var(--muted);margin-bottom:12px;}
+
+.pb-arrow{display:flex;align-items:center;justify-content:center;gap:10px;
+  color:var(--subtle);font-size:11.5px;letter-spacing:.03em;padding:9px 0;text-align:center;}
+.pb-arrow::before,.pb-arrow::after{content:"";height:1px;background:var(--div);flex:1;max-width:170px;}
+
+.pb-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px;}
+.pb-tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.02em;
+  padding:3px 9px;border-radius:20px;background:var(--acc2);color:var(--muted);
+  border:1px solid var(--div);}
+.pb-tag.ok{background:#EEF5F0;color:#2F7A46;border-color:transparent;}
+.pb-tag.warn{background:#FFF4E5;color:#8A5300;border-color:transparent;}
+.pb-tag.red{background:#FCEDED;color:var(--acc);border-color:transparent;}
+
+.pb-tblwrap{overflow-x:auto;background:var(--surface);border:1px solid var(--div);
+  border-radius:var(--rc);}
+.pb-tbl{border-collapse:collapse;width:100%;min-width:620px;font-size:13.5px;}
+.pb-tbl th{text-align:left;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--subtle);font-weight:700;padding:11px 15px;white-space:nowrap;
+  border-bottom:1px solid var(--div);background:var(--surface2);}
+.pb-tbl td{padding:9px 15px;border-bottom:1px solid #F4F4F2;vertical-align:top;line-height:1.55;}
+.pb-tbl tr:last-child td{border-bottom:none;}
+.pb-tbl td.nm{font-weight:700;}
+.pb-tbl td.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--muted);white-space:nowrap;}
+.pb-tbl td.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
+  color:var(--muted);}
+
+.pb-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:13px;font-size:12.5px;color:var(--muted);}
+.pb-legend span{display:flex;align-items:center;gap:7px;}
+.pb-sw{width:10px;height:10px;border-radius:3px;flex:none;}
+
+/* Index → guideline. The element name is the door. */
+.pb-tbl td.nm a{color:var(--acc);text-decoration:none;border-bottom:1px solid rgba(214,40,40,.28);}
+.pb-tbl td.nm a:hover{border-bottom-color:var(--acc);}
+.pb-soon{font-size:11px;font-weight:600;color:var(--subtle);white-space:nowrap;}
+
+.pb-guide{background:var(--surface);border:1px solid var(--div);border-radius:var(--rc);
+  padding:22px 24px;margin-bottom:14px;scroll-margin-top:80px;}
+.pb-guide > h3{font-size:22px;font-weight:700;letter-spacing:-.025em;line-height:1.2;}
+.pb-guide > h3 .dot{color:var(--acc);}
+.pb-gdef{font-size:14px;color:var(--muted);line-height:1.6;margin:6px 0 18px;max-width:70ch;}
+.pb-back{font-size:11.5px;color:var(--subtle);text-decoration:none;float:right;}
+.pb-back:hover{color:var(--acc);}
+
+.pb-block{margin-top:16px;}
+.pb-block > h4{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--subtle);margin-bottom:7px;}
+.pb-list{list-style:none;padding:0;font-size:13.5px;line-height:1.6;}
+.pb-list li{padding:7px 0 7px 20px;position:relative;border-bottom:1px solid #F4F4F2;color:var(--muted);}
+.pb-list li:last-child{border-bottom:none;}
+.pb-list li b{color:var(--text);}
+.pb-list li::before{content:"";position:absolute;left:2px;top:15px;width:6px;height:6px;
+  border-radius:50%;background:var(--subtle);}
+.pb-list.never li::before{background:var(--acc);}
+.pb-list.do li::before{background:#2F7A46;}
+
+.pb-steps{padding-left:20px;font-size:13.5px;}
+.pb-steps li{margin-bottom:7px;color:var(--muted);line-height:1.6;}
+.pb-steps li b{color:var(--text);}
+
+.pb-stamp{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+  color:var(--subtle);letter-spacing:.02em;padding:0 32px 4px;}
+
+@media(max-width:1024px){ .pb{padding:0 18px 48px;} .pb-stamp{padding:0 18px 4px;} }
+@media(max-width:768px){
+  .pb-g3,.pb-g2{grid-template-columns:1fr;}
+  .pb{padding:0 14px 40px;} .pb-stamp{padding:0 14px 4px;}
+}
+</style>
+</head>
+<body>
+
+<!-- The tool's page head. No subtitle under it; the accent span holds the
+     changing part. The real page inside the Calendar gets this from the
+     shared frame — it is written out here only so the mockup is honest. -->
+<div class="year-head">
+  <h1 class="year-title"><span>Meta</span> structure playbook</h1>
+</div>
+
+<div class="pb">
+<div class="pb-parts">
+  <div class="bh-seg" role="tablist">
+    <button class="bh-door on" data-part="assets">Assets</button>
+    <button class="bh-door" data-part="promotions">Promotions</button>
+    <button class="bh-door" data-part="moments">Moments</button>
+  </div>
+</div>
+
+<div class="pb-part" data-part="assets">
+
+
+<!-- ══ INDEX ═════════════════════════════════════════════════════ -->
+<section id="index">
+<div class="pb-tblwrap">
+<table class="pb-tbl">
+  <thead><tr><th>Element</th><th>What it is</th><th>Where it belongs</th></tr></thead>
+  <tbody>
+    <tr><td class="nm"><a href="#g-portfolio">Business portfolio</a></td><td>The container that owns Meta assets on behalf of a company, and the only place access is granted.</td><td>One per company — ours, and one per client</td></tr>
+    <tr><td class="nm"><a href="#g-page">FB Page</a></td><td>The brand's presence on Facebook, and what an Instagram professional account attaches to.</td><td>The brand's own portfolio</td></tr>
+    <tr><td class="nm"><a href="#g-page">Insta professional account</a></td><td>A Business or Creator account, linked to the Page; only a Business account can be read by tools.</td><td>The brand's own portfolio</td></tr>
+    <tr><td class="nm"><a href="#g-adaccount">Ad account</a></td><td>Where campaigns are built and money is spent; the invoice is raised to whoever owns it.</td><td>Whoever pays — see the billing rule below</td></tr>
+    <tr><td class="nm"><a href="#g-pixel">Pixel and dataset</a></td><td>The code on a website that records what visitors do, and the store those events go into.</td><td>The brand's own portfolio — history is lost if it moves later</td></tr>
+    <tr><td class="nm"><a href="#g-domain">Domain</a></td><td>A website verified as belonging to a business, which unlocks link editing and reporting.</td><td>One portfolio worldwide — it cannot be verified twice</td></tr>
+    <tr><td class="nm"><a href="#g-catalogue">Catalogue</a></td><td>The product feed behind shopping and dynamic ads.</td><td>The brand's own portfolio</td></tr>
+    <tr><td class="nm"><a href="#g-whatsapp">WhatsApp Business account</a></td><td>A phone number registered for business messaging and campaign click-throughs.</td><td>The brand's own portfolio</td></tr>
+    <tr><td class="nm"><a href="#g-payment">Payment method</a></td><td>A card, a bank mandate or prepaid funds attached to an ad account; separate from ownership.</td><td>On the paying party's own ad account, never shared across brands</td></tr>
+    <tr><td class="nm"><a href="#g-partner">Partner access</a></td><td>One portfolio granting another named access to named assets. This is how we reach client work.</td><td>Granted by the client, to us</td></tr>
+    <tr><td class="nm"><a href="#g-people">People</a></td><td>Individuals added to a portfolio one at a time — the client's own staff in their portfolio, our staff in ours.</td><td>Each person in their own employer's portfolio only</td></tr>
+    <tr><td class="nm"><a href="#g-people">Partners</a></td><td>Whole businesses granted access rather than individuals — us in the client's portfolio, and any other agency or media buyer they work with.</td><td>Listed under Partners, never under People</td></tr>
+    <tr><td class="nm"><a href="#g-audiences">Customer list custom audience</a></td><td>Contact data the client gives us — phone numbers, emails — uploaded to build a targetable audience. It is the client's data, not ours.</td><td>Uploaded into the client's own ad account, never ours</td></tr>
+    <tr><td class="nm"><a href="#g-audiences">Website and engagement custom audience</a></td><td>An audience built from pixel events or from people who interacted with the Page, without any file being uploaded.</td><td>The client's own ad account, tied to their pixel</td></tr>
+    <tr><td class="nm"><a href="#g-audiences">Lookalike audience</a></td><td>A new audience Meta builds by finding people who resemble a source audience.</td><td>The same ad account as its source audience</td></tr>
+    <tr><td class="nm"><a href="#g-audiences">Custom Audience Terms</a></td><td>The agreement accepted once per ad account, confirming the uploader has the right to use that contact data.</td><td>Accepted by the client's ad account, by a named person</td></tr>
+    <tr><td class="nm"><a href="#g-audiences">Audience sharing</a></td><td>One ad account lending an audience to another. It makes one client's contact data usable by another advertiser.</td><td>Off, unless the client has asked for it in writing</td></tr>
+    <tr><td class="nm"><a href="#g-leadform">Lead form</a></td><td>The instant form inside an ad that collects a prospect's details, and the leads it stores.</td><td>The client's own Page and ad account</td></tr>
+    <tr><td class="nm"><a href="#g-assetgroup">Asset group</a></td><td>A bundle of one brand's assets, so a person is given a brand rather than a list of items.</td><td>One per brand, inside the portfolio that owns it</td></tr>
+    <tr><td class="nm"><a href="#g-systemuser">System user</a></td><td>A non-human account that carries a tool's access; it has no password and does not leave.</td><td>Our portfolio — one per tool</td></tr>
+    <tr><td class="nm"><a href="#g-verification">Business verification</a></td><td>Meta confirming a portfolio is a real registered company, using its incorporation documents.</td><td>Every portfolio, ours included</td></tr>
+    <tr><td class="nm"><a href="#g-twofactor">Two-factor authentication</a></td><td>A second check at sign-in, set as a requirement by the portfolio rather than by each person.</td><td>Required of everyone, everywhere</td></tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<!-- ══ GUIDELINES ════════════════════════════════════════════════ -->
+<section>
+
+<!-- ── BUSINESS PORTFOLIO ──────────────────────────────────────── -->
+<div class="pb-guide" id="g-portfolio">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>Business portfolio<span class="dot">.</span></h3>
+
+  <div class="pb-tabs">
+    <div class="bh-seg" role="tablist">
+      <button class="bh-door on" data-opt="a">A · Client owns it</button>
+      <button class="bh-door" data-opt="b">B · CC owns it</button>
+    </div>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="a">
+    <h4>Client owns the portfolio</h4>
+    <p class="pb-note">Partner access reaches only the assets the client shares. Anything that has to be created, removed or changed inside the portfolio needs an admin seat, so the client grants admin access to <b>Chirag and Dhrumi</b>. They then set the portfolio up and grant whatever access the rest of the team needs.</p>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Portfolio in their name</span><span class="dt">They create it, or CC confirms the one they have is theirs and is the only one.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Admin access granted</span><span class="dt">To Chirag and Dhrumi, on their own profiles, so CC can create assets and change settings inside the portfolio. Nobody else at CC is added here.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Partner added</span><span class="dt">InfiniKraft Manager · 4067423043493168, added from the admin seat. Any agency no longer working with them removed at the same time.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Legal name and details</span><span class="dt">From the client&#39;s registration certificate and a recent utility bill. Their address, website and business email — never InfiniKraft&#39;s. Filled in if blank, corrected if wrong.</span><span class="who">both</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Two-factor set</span><span class="dt">Required for everyone. Portfolio setting — their admin clicks, CC drives the call.</span><span class="who">both</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Verification done</span><span class="dt">Submitted if not already. Code goes to their business email.</span><span class="who">both</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Second client admin</span><span class="dt">So the portfolio never hangs off one person&#39;s profile.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">People list clean</span><span class="dt">Only their staff. Anyone who has left, and every CC person, removed.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Assets present and owned</span><span class="dt">Each one below sits here and is owned, not shared in. Missing ones built.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Duplicates removed</span><span class="dt">One Page, one Instagram account, one pixel. Nothing named after a person.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Audiences theirs</span><span class="dt">Customer lists sit in their account and are not shared to another.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Asset group</span><span class="dt">Only if the portfolio holds more than one brand. One group per brand.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="b" hidden>
+    <h4>CC owns the portfolio</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">On Chirag&#39;s profile</span><span class="dt">He creates it. If it already exists on a staff profile or a shared login, he is added as admin and that profile removed.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Three admins</span><span class="dt">Chirag, Dhrumi and Jinal. Never one person, never a shared login.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Legal name and details</span><span class="dt">From the client&#39;s registration certificate and a recent utility bill. Their address, website and business email — never InfiniKraft&#39;s, not even temporarily.</span><span class="who">both</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Partner added</span><span class="dt">InfiniKraft Manager · 4067423043493168</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Two-factor set</span><span class="dt">Required for everyone.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Verification done</span><span class="dt">Submitted if not already. Code goes to the client&#39;s business email.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">People list clean</span><span class="dt">The three admins only. No shared login, no other staff profile.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Assets present and owned</span><span class="dt">Each one below built here, and anything of theirs sitting elsewhere moved in.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Duplicates removed</span><span class="dt">One Page, one Instagram account, one pixel. Nothing named after a person.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Audiences theirs</span><span class="dt">Customer lists sit in their account and are not shared to another.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Asset group</span><span class="dt">Only if the portfolio holds more than one brand. One group per brand.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">At handover</span><span class="dt">Client&#39;s admin added if they want one, InfiniKraft&#39;s three removed, CC stays as partner.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Assets that go inside it</h4>
+    <ul class="pb-chk">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb"><a href="#g-page">FB Page</a></span><span class="dt">Created inside the portfolio, not on a personal profile.</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb"><a href="#g-page">Insta account</a></span><span class="dt">Set to Business in the Instagram app, connected to the Page in Page settings, then added to the portfolio under Instagram accounts in its own right.</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb"><a href="#g-adaccount">Ad account</a></span><span class="dt">One per brand. In this portfolio if the client pays Meta; in InfiniKraft Manager · 4067423043493168 if CC pays and bills them.</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb"><a href="#g-pixel">Pixel and dataset</a></span><span class="dt">Created here from day one, events confirmed live.</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb"><a href="#g-domain">Domain verified</a></span><span class="dt">Here, never in InfiniKraft&#39;s — a domain can only be claimed once.</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb"><a href="#g-whatsapp">WhatsApp Business account</a></span><span class="dt">The client&#39;s business number, registered here, if messaging or click-to-WhatsApp is in scope.</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb"><a href="#g-audiences">Customer lists</a></span><span class="dt">Any contact data the client shares is uploaded into their own ad account, with the Custom Audience Terms accepted there by a named person.</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb"><a href="#g-audiences">Audiences</a></span><span class="dt">Custom and lookalike audiences live in the same ad account as their source. Audience sharing to any other account stays off.</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb"><a href="#g-leadform">Lead forms</a></span><span class="dt">Leads collected on the client&#39;s Page and ad account, and downloaded to the client rather than kept only by CC.</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb"><a href="#g-catalogue">Catalogue</a></span><span class="dt">If they sell products online.</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>No person's name</span>
+      <span>No brand nickname</span>
+      <span>Never blank</span>
+      <span>Never on a staff profile</span>
+      <span>One client per portfolio</span>
+      <span>Partner for the team, admin only for Chirag and Dhrumi</span>
+      <span>Never verified in InfiniKraft&#39;s name</span>
+    </div>
+  </div>
+
+  <div class="pb-block">
+    <h4>When they leave</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">Client removes InfiniKraft&#39;s partner link. Everything stays with them, nothing is migrated.</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── PAGE + INSTAGRAM ────────────────────────────────────────── -->
+<div class="pb-guide" id="g-page">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>FB Page and Insta professional account<span class="dot">.</span></h3>
+
+  <div class="pb-tabs">
+    <div class="bh-seg" role="tablist">
+      <button class="bh-door on" data-opt="new">A · New Page</button>
+      <button class="bh-door" data-opt="old">B · Page already exists</button>
+    </div>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="new">
+    <h4>Creating a new Page</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Created inside the portfolio</span><span class="dt">Business settings → Accounts → Pages → Add → Create a new Page. Never from a personal profile.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Name and username</span><span class="dt">The brand as the client uses it publicly. Same username on both platforms wherever it is free.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Profile and cover</span><span class="dt">Logo and cover at the sizes Meta asks for, not cropped from something else.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Page details</span><span class="dt">Category, the client&#39;s website, their contact number and address. Never InfiniKraft&#39;s.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Insta handle secured</span><span class="dt">Created if it does not exist, or the client&#39;s existing handle identified.</span><span class="who">both</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Set to Business</span><span class="dt">Instagram app → Settings → Account type. Not Personal, not Creator.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Connected to the FB Page</span><span class="dt">Page settings → Linked accounts.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Instagram added as an asset</span><span class="dt">Business settings → Accounts → Instagram accounts.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">People assigned</span><span class="dt">From Business settings → Users → People, never from the FB Page or the Instagram app. FB Page and Insta account assigned separately, by level — content people get content, media buyers get ads.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">FB Page published</span><span class="dt">Only once the name, picture, details and first posts are in place.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Meta Verified decided</span><span class="dt">Optional and case by case — a paid subscription for the blue badge, not the portfolio&#39;s business verification. Taken only where the badge earns its cost.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="old" hidden>
+    <h4>Bringing an existing Page in</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Owner established</span><span class="dt">Page settings → Page access. &quot;Owned by individual people&quot; means it is in no portfolio at all.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Request sent</span><span class="dt">Business settings → Accounts → Pages → Add, from the portfolio it should belong to.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Request approved</span><span class="dt">A person holding full control of the Page approves it. Nothing moves until they do.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Personal access removed</span><span class="dt">Once the Page is in the portfolio, individual Facebook access is removed. Access comes through the portfolio only.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Duplicates dealt with</span><span class="dt">A second FB Page is merged into the real one. Insta cannot be merged — pick one, move the content, archive the other.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Name and details checked</span><span class="dt">Username, category, website, contact and address are the client&#39;s and current.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Instagram checked</span><span class="dt">Business type, connected to this Page, and added under Instagram accounts in its own right.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">People assigned</span><span class="dt">From Business settings → Users → People, never from the FB Page or the Instagram app. FB Page and Insta account assigned separately. Anyone who has left the brand or the agency is removed.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Meta Verified decided</span><span class="dt">Optional and case by case — a paid subscription for the blue badge, not the portfolio&#39;s business verification.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>Business, not Creator</span>
+      <span>Never on a personal profile</span>
+      <span>One FB Page per brand</span>
+      <span>One Insta, one FB Page</span>
+      <span>Never relink to another FB Page</span>
+      <span>Never share the password</span>
+      <span>Insta cannot be merged</span>
+      <span>Access from Business settings only</span>
+    </div>
+  </div>
+
+  <div class="pb-block">
+    <h4>When they leave</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">Scheduled posts checked and cleared before access ends — anything queued stops the moment the link is cut.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Client removes InfiniKraft&#39;s partner link. Page and Instagram stay with them, nothing is migrated.</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── AD ACCOUNT ──────────────────────────────────────────────── -->
+<div class="pb-guide" id="g-adaccount">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>Ad account<span class="dot">.</span></h3>
+
+  <div class="pb-tabs">
+    <div class="bh-seg" role="tablist">
+      <button class="bh-door on" data-opt="clientpays">A · Client pays Meta</button>
+      <button class="bh-door" data-opt="ccpays">B · CC pays and bills the client</button>
+    </div>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="clientpays">
+    <h4>The client pays Meta directly</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Created in their portfolio</span><span class="dt">Business settings → Accounts → Ad accounts → Add → Create a new ad account.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Named for the brand</span><span class="dt">The brand and nothing else. No &quot;new&quot;, no date, no person&#39;s name.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Time zone and currency</span><span class="dt">Set at creation and permanent. Changing either means a new account.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Business details</span><span class="dt">The client&#39;s legal name, address and GST — this is who Meta invoices.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Payment method added</span><span class="dt">Their card or bank, on their own account.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Spend limit set</span><span class="dt">The month&#39;s approved budget entered as the account spending limit, so a ceiling exists without anyone remembering to pause.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Pixel connected</span><span class="dt">Their pixel, shared to this ad account from Data sources.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">FB Page and Insta connected</span><span class="dt">So ads can run as the brand on both.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">People assigned</span><span class="dt">From the business portfolio — Business settings → Users → People — never from inside the ad account. Media buyers only.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Duplicates removed</span><span class="dt">One ad account for this brand. Any second one closed once its history is exported.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Balance clean</span><span class="dt">No unpaid dues, no prepaid funds left sitting in the account.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="ccpays" hidden>
+    <h4>CC pays Meta and bills the client</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Created in InfiniKraft&#39;s portfolio</span><span class="dt">InfiniKraft Manager · 4067423043493168. A dedicated account for this one client, never an existing one.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Named for the client</span><span class="dt">The client&#39;s brand, so the account says whose spend it carries.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Time zone and currency</span><span class="dt">Set at creation and permanent. Changing either means a new account.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Business details</span><span class="dt">CCT DIGISOL PVT LTD, its registered address and GST — because Meta invoices whoever owns the ad account.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Funding</span><span class="dt">Credit line where CC has one. Otherwise funded only to the month&#39;s approved spend, never topped up from another brand&#39;s balance.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Client advance or PO</span><span class="dt">In hand before the month&#39;s spend starts.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Spend limit set</span><span class="dt">The month&#39;s approved budget entered as the account spending limit, so CC is never financing more than agreed.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Client&#39;s pixel connected</span><span class="dt">Their pixel in their portfolio, shared to this account. Never a CC pixel.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Client&#39;s FB Page and Insta connected</span><span class="dt">Reached through the partner link, so ads run as the brand.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">View access to the client</span><span class="dt">Their portfolio added as a partner with view access on this account, so they see every campaign and every number.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">People assigned</span><span class="dt">From the business portfolio — Business settings → Users → People — never from inside the ad account. Media buyers only.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Monthly reconciliation</span><span class="dt">Meta&#39;s invoice to CCT Digisol matched against the invoice CC raises to the client.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Funding and invoices</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt"><b>Adding funds is a payment, not a purchase.</b> Meta&#39;s tax invoice is raised against spend at month end, so a top-up receipt will never match an invoice. Finance should file the monthly invoice, not the top-up receipt — Billing → Transactions holds both, separately.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt"><b>Fund additions are entered as an advance</b>, not a cost, and drawn down as spend is invoiced. Fund only to the month&#39;s approved amount so the advance closes out each month.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt"><b>The client is billed on spend</b>, using Meta&#39;s month-end invoice as the supporting document — never on what was topped up.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt"><b>A credit line removes the mismatch entirely.</b> Campaigns run, Meta invoices exactly what was spent at month end, nothing sits as a balance. See the note below on who can hold one.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt"><b>The month&#39;s budget is the spend limit.</b> Enter the approved monthly budget as the account spending limit. It is a running total, not a monthly one — when it is reached every ad in the account stops immediately. Set it each month and clear the counter on the first, and set it slightly above the approved figure so delivery does not die unnoticed.</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>The credit line — who can hold one</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt"><b>It belongs to a business portfolio, not an ad account.</b> One credit line covers every ad account under that portfolio, with a single shared ceiling rather than a limit per account.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt"><b>The portfolio must be verified first.</b> Meta requires a verified portfolio and a confirmed legal entity. InfiniKraft Manager is unverified today, so CC cannot apply until that is done.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt"><b>A new client portfolio will not get one.</b> Starting limits follow spend history, so a portfolio created last week has nothing to assess.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt"><b>InfiniKraft&#39;s credit line can be extended to a client&#39;s own ad account</b> — capped, fixed, or in full. CC stays liable for the invoice either way, so this is a commercial decision, not a setup step.</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Unused balance when a client leaves</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt"><b>Fund short in the final month.</b> From the moment notice is given, top up only to what will actually be spent. Almost every stranded balance was avoidable at this step.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt"><b>Spend it down on the client&#39;s own campaigns first.</b> While access still runs, and with their agreement, keep their campaigns going until the balance reaches zero. If that clears it, nothing below is needed.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt"><b>Strip the account before reusing it.</b> Remove their FB Page, Insta account and pixel from it, and delete every audience built from their data. Then rename the account so it no longer carries their brand name.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt"><b>Use the remaining funds on other work CC is responsible for.</b> The money was paid to Meta by CC, the account belongs to InfiniKraft Manager, and Meta invoices CCT Digisol either way — so the spend is InfiniKraft&#39;s to redeploy.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt"><b>Close the account once the balance is nil.</b> Not before. An account deactivated with money still in it is money nobody can find later — which is what happened with ₹31,888.06 on Duke and ₹20,599.96 on Smartway.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt"><b>Only ever with a CC-owned account.</b> A balance sitting in a client&#39;s own ad account is their money. Ask Meta for a refund to the original payment method, or leave it with them — never spend it on other work.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt"><b>A balance cannot be transferred.</b> Meta has no way to move funds between ad accounts, which is why the account itself is reused rather than the money moved. Ad credits and coupons cannot be moved or refunded at all.</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>One account per brand</span>
+      <span>Never one account, many brands</span>
+      <span>Time zone and currency are permanent</span>
+      <span>The invoice follows the account owner, not the card</span>
+      <span>Never leave a balance sitting</span>
+      <span>Balance cannot move — reuse the account</span>
+      <span>Client&#39;s pixel, not InfiniKraft&#39;s</span>
+      <span>Access from Business settings only</span>
+    </div>
+  </div>
+
+  <div class="pb-block">
+    <h4>When they leave</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">Everything paused, on whichever account the spend was running through.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Their own account — InfiniKraft&#39;s partner link removed, nothing else to do.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">InfiniKraft&#39;s account — balance settled or recovered, final invoice raised, account deactivated.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Audiences built from their customer data deleted.</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── PIXEL AND DATASET ───────────────────────────────────────── -->
+<div class="pb-guide" id="g-pixel">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>Pixel and dataset<span class="dot">.</span></h3>
+
+  <div class="pb-tabs">
+    <div class="bh-seg" role="tablist">
+      <button class="bh-door on" data-opt="newpx">A · New pixel</button>
+      <button class="bh-door" data-opt="oldpx">B · Pixel already exists</button>
+    </div>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="newpx">
+    <h4>Setting up a new pixel</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Created in their portfolio</span><span class="dt">Business settings → Data sources → Datasets → Add. In the client&#39;s portfolio from day one, because moving it later loses its history.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Named for brand and site</span><span class="dt">The brand and the website it sits on. No &quot;new code&quot;, no person&#39;s name.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Code installed</span><span class="dt">Base code on every page of the site, or through the client&#39;s tag manager.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Domain verified</span><span class="dt">Business settings → Brand safety → Domains, in this same portfolio. A domain can be verified by one portfolio worldwide.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Events defined</span><span class="dt">The ones the campaign actually needs — purchase, lead, add to cart, contact — and nothing decorative.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Events confirmed live</span><span class="dt">Events Manager shows them arriving in the last 24 hours, with the right values.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Priority events ranked</span><span class="dt">Aggregated event measurement — the eight events ordered by importance, which is what iOS traffic reports against.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Conversions API considered</span><span class="dt">Server-side events where the client&#39;s site supports it, so measurement survives browser blocking.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Shared to the ad account</span><span class="dt">The dataset assigned to the ad account that will run the campaigns.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">People assigned</span><span class="dt">From the business portfolio — Business settings → Users → People.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="oldpx" hidden>
+    <h4>Taking over an existing pixel</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Found and owner established</span><span class="dt">Which portfolio holds it, and whether that portfolio is the client&#39;s.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Wrong portfolio decided deliberately</span><span class="dt">Moving a dataset loses its history. Share it to the ad account instead wherever that works, and only move it as a considered decision with the client.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Renamed properly</span><span class="dt">Brand and site. Anything named after a person or a date gets fixed.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Receiving events</span><span class="dt">Arriving in the last 24 hours. A dataset connected to nothing reads as measurement while measuring nothing.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Duplicates removed from the site</span><span class="dt">Two pixels on one site double-count. Keep the one with history, take the others off the pages.</span><span class="who">both</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Domain verification checked</span><span class="dt">If another agency holds the verification, they have to release it before the client&#39;s portfolio can claim it.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Events reviewed</span><span class="dt">The ones being recorded still match what the campaigns optimise for.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Priority events ranked</span><span class="dt">Aggregated event measurement checked and reordered if the campaign objective has changed.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Shared to the ad account</span><span class="dt">The dataset assigned to the ad account that will run the campaigns.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">People assigned</span><span class="dt">From the business portfolio. Anyone who has left the brand or the agency removed.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>History is lost if it moves</span>
+      <span>One pixel per website</span>
+      <span>A domain is verified once worldwide</span>
+      <span>Never a CC pixel on a client site</span>
+      <span>Never one pixel across two brands</span>
+      <span>Access from Business settings only</span>
+    </div>
+  </div>
+
+  <div class="pb-block">
+    <h4>When they leave</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">Pixel in their portfolio — it stays, with every event it has learned. InfiniKraft&#39;s access ends with the partner link and nothing is migrated.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Pixel wrongly sitting in InfiniKraft&#39;s portfolio — the choice is put to the client in writing: move it and lose the history, or leave it and lose it entirely. Either way it is their decision, not InfiniKraft&#39;s.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Audiences built from that pixel deleted once the work ends.</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── DOMAIN ──────────────────────────────────────────────────── -->
+<div class="pb-guide" id="g-domain">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>Domain<span class="dot">.</span></h3>
+
+  <div class="pb-tabs">
+    <div class="bh-seg" role="tablist">
+      <button class="bh-door on" data-opt="newdom">A · Not yet verified</button>
+      <button class="bh-door" data-opt="olddom">B · Verified somewhere else</button>
+    </div>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="newdom">
+    <h4>Verifying a domain</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Verified in their portfolio</span><span class="dt">Business settings → Brand safety → Domains → Add. One portfolio worldwide can hold it, so it has to be the right one first time.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Root domain, not a page</span><span class="dt">example.com covers every page and subdomain under it.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Method chosen</span><span class="dt">DNS record, meta tag in the site&#39;s head, or an HTML file uploaded to the server. DNS is the one that survives a site rebuild.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Record added</span><span class="dt">By whoever holds the DNS or the website — their IT team or their developer.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Verification confirmed</span><span class="dt">Status reads Verified. DNS can take a few hours to propagate.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Record left in place</span><span class="dt">Removing it later un-verifies the domain. It is told to the client&#39;s IT team in writing.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Every domain they advertise</span><span class="dt">Microsites and landing-page domains too, not only the main site.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="olddom" hidden>
+    <h4>Domain held by someone else</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Holder identified</span><span class="dt">Adding it shows an error saying it is already verified. Usually a previous agency or a developer&#39;s own portfolio.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Release requested</span><span class="dt">The holder removes it from their portfolio. Nothing can be done from this side until they do.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Old record removed</span><span class="dt">Their DNS record or meta tag taken off the site.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Re-verified in their portfolio</span><span class="dt">Following the steps on the other tab.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Escalated if refused</span><span class="dt">If the holder will not release it, it goes to Meta support as a dispute, with the client&#39;s domain ownership records.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>One portfolio worldwide</span>
+      <span>Never verified in InfiniKraft&#39;s name</span>
+      <span>Root domain, not a page</span>
+      <span>Never remove the record</span>
+      <span>DNS survives a rebuild</span>
+    </div>
+  </div>
+
+  <div class="pb-block">
+    <h4>When they leave</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">Verified in their portfolio — it stays with them, nothing to do.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Verified in InfiniKraft&#39;s portfolio by mistake — CC releases it and tells them, so the next agency is not blocked. Holding a former client&#39;s domain is not leverage worth having.</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── CATALOGUE ───────────────────────────────────────────────── -->
+<div class="pb-guide" id="g-catalogue">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>Catalogue<span class="dot">.</span></h3>
+
+  <div class="pb-block">
+    <h4>Setting it up</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Created in their portfolio</span><span class="dt">Business settings → Data sources → Catalogues → Add. One catalogue per brand.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Feed connected</span><span class="dt">A scheduled feed from the store — Shopify, WooCommerce or a hosted file — not a one-time upload that goes stale.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Pixel linked</span><span class="dt">The brand&#39;s pixel attached, so product views and purchases match catalogue items.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Product IDs match</span><span class="dt">The IDs the pixel sends are the IDs in the feed. Mismatched IDs make dynamic ads silently useless.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Errors cleared</span><span class="dt">Meta lists rejected items with reasons — missing images, prices, availability. Worked through, not ignored.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Shared to the ad account</span><span class="dt">Assigned to the ad account running the campaigns.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">People assigned</span><span class="dt">From the business portfolio — Business settings → Users → People.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Refresh schedule set</span><span class="dt">Often enough that price and stock on the ad match the site.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>One catalogue per brand</span>
+      <span>Feed, not a manual upload</span>
+      <span>Product IDs must match the pixel</span>
+      <span>Stale stock is a customer complaint</span>
+    </div>
+  </div>
+
+  <div class="pb-block">
+    <h4>When they leave</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">Stays in their portfolio with the feed intact. InfiniKraft&#39;s access ends with the partner link.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Any feed running through a CC-held account or script is handed over or switched off, so their catalogue does not depend on CC after the work ends.</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── WHATSAPP ────────────────────────────────────────────────── -->
+<div class="pb-guide" id="g-whatsapp">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>WhatsApp Business account<span class="dot">.</span></h3>
+
+  <div class="pb-block">
+    <h4>Setting it up</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Registered in their portfolio</span><span class="dt">Business settings → Accounts → WhatsApp accounts. Never in InfiniKraft&#39;s.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">The client&#39;s number</span><span class="dt">A number the client owns and can receive on. Never a CC number, never a staff member&#39;s phone.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Number not already in use</span><span class="dt">A number on the consumer WhatsApp app or another business account has to be freed first.</span><span class="who">both</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Verification code received</span><span class="dt">Meta sends it to that number by SMS or call — the client needs the phone in hand.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Profile completed</span><span class="dt">Display name, category, description, address and website — the client&#39;s, checked against their site.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Display name approved</span><span class="dt">Meta reviews it against their own name policy. A name that is not the business name gets rejected.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Connected to the ad account</span><span class="dt">So click-to-WhatsApp ads can route to it.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Who answers agreed</span><span class="dt">Written down before the first campaign — an unanswered WhatsApp enquiry is a lost lead and a visible one.</span><span class="who">both</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">People assigned</span><span class="dt">From the business portfolio — Business settings → Users → People.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>The client&#39;s number, always</span>
+      <span>Never a staff phone</span>
+      <span>Display name must be the business name</span>
+      <span>Someone has to answer it</span>
+      <span>Moving a number between accounts is painful</span>
+    </div>
+  </div>
+
+  <div class="pb-block">
+    <h4>When they leave</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">The number and the account are theirs and stay put. InfiniKraft&#39;s access ends with the partner link.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Chat history and any saved replies sit with the account, so nothing needs exporting.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">If the number was ever registered under a CC account, it is released before the client tries to use it elsewhere.</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── PAYMENT METHOD ──────────────────────────────────────────── -->
+<div class="pb-guide" id="g-payment">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>Payment method<span class="dot">.</span></h3>
+
+  <div class="pb-block">
+    <h4>Setting it up</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">On the paying party&#39;s account</span><span class="dt">The client&#39;s card on their ad account; InfiniKraft&#39;s on a CC-owned account. A card never sits on the other side&#39;s account.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Billing details match the owner</span><span class="dt">Name, address and GST on the ad account are the entity Meta will invoice, whatever card is attached.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Charges traceable</span><span class="dt">Every charge on the statement names the ad account it funded. Finance reconciles per ad account, not per card.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Backup method added</span><span class="dt">A second card or bank mandate, so a single failure does not stop delivery.</span><span class="who">both</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Indian card rules understood</span><span class="dt">RBI requires an e-mandate for recurring card charges, and any auto-debit above ₹15,000 needs the cardholder to approve it again each time. Meta&#39;s automatic charges are recurring, so anything over that limit can fail and delivery stops the same day. Prepaid funds or a credit line avoid it entirely.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Billing threshold known</span><span class="dt">On automatic payments Meta charges the card each time spend reaches a set amount — the threshold — and again on the monthly bill date. So one month produces several charges of odd amounts, not one clean bill. The threshold starts small and rises as payments succeed. Finance should reconcile against the monthly invoice, not against individual card charges.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Failure alerts go somewhere</span><span class="dt">A named person sees payment failures the same day. A failed payment pauses delivery and can restrict the account.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Card expiry tracked</span><span class="dt">An expired card stops campaigns mid-month. Renewal dates noted with finance.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>A card is not ownership</span>
+      <span>The invoice follows the account owner</span>
+      <span>Separation lives in the accounts, not the card</span>
+      <span>A failed payment stops delivery</span>
+      <span>Repeated failures restrict the account</span>
+    </div>
+  </div>
+
+  <div class="pb-block">
+    <h4>When they leave</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">Any CC card is removed from an account that stays with the client, before the partner link is cut.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Any client card is removed from a CC-owned account.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Remaining balance handled under the <a href="#g-adaccount">Ad account</a> rules before anything is closed.</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── PARTNER ACCESS ──────────────────────────────────────────── -->
+<div class="pb-guide" id="g-partner">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>Partner access<span class="dot">.</span></h3>
+
+  <div class="pb-tabs">
+    <div class="bh-seg" role="tablist">
+      <button class="bh-door on" data-opt="inbound">A · Client grants CC access</button>
+      <button class="bh-door" data-opt="outbound">B · CC grants the client access</button>
+    </div>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="inbound">
+    <h4>Getting into a client&#39;s portfolio</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Admin access for two people</span><span class="dt">The client adds Chirag and Dhrumi as admins of their portfolio. Nothing below can be done until this is accepted. Nobody else from CC is ever added here — the rest of the team reaches the work through the partner link.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Partner added</span><span class="dt">Business settings → Partners → Add → using InfiniKraft Manager · 4067423043493168, from the admin seat.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Named assets only</span><span class="dt">The FB Page, Insta account, ad account and data sources actually being worked on.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Permission level per asset</span><span class="dt">What CC can do on each one, not a blanket setting across all of them.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Old agencies removed</span><span class="dt">Any partner no longer working with the client comes off the list at the same time.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Reviewed at renewal</span><span class="dt">The asset list checked against what the scope now covers.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="outbound" hidden>
+    <h4>Giving a client access to a CC-owned asset</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Their portfolio added as partner</span><span class="dt">In InfiniKraft Manager, using the client&#39;s own portfolio ID.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">One asset, not the portfolio</span><span class="dt">Usually the dedicated ad account CC runs for them, and nothing else.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">View access, not control</span><span class="dt">They see every campaign and every number without being able to change or spend.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Told to the client</span><span class="dt">Transparency only works if they know it is there.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Removed at exit</span><span class="dt">The link comes off when the work ends, like any other.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>Partner for the team, admin only for Chirag and Dhrumi</span>
+      <span>Named assets only</span>
+      <span>Never full portfolio control</span>
+      <span>One link per business</span>
+      <span>Removal is one action</span>
+    </div>
+  </div>
+
+  <div class="pb-block">
+    <h4>When they leave</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">Client removes CC as a partner. Every person at CC loses access the same minute, with nothing to chase asset by asset.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">CC removes the client&#39;s partner link from any CC-owned asset.</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── PEOPLE AND PARTNERS ─────────────────────────────────────── -->
+<div class="pb-guide" id="g-people">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>People and partners<span class="dot">.</span></h3>
+
+  <div class="pb-block">
+    <h4>Someone joins CC</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Added to InfiniKraft&#39;s portfolio</span><span class="dt">InfiniKraft Manager · 4067423043493168, on their communicationcrafts.com address.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Their own profile</span><span class="dt">One personal Facebook profile per person. Never a shared login, never a second profile for work.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Level set</span><span class="dt">Administrator, account manager, creative, media buyer or finance — one of the five, nothing invented.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Brands assigned</span><span class="dt">Only the brands they work on, from Business settings → Users → People.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Two-factor on their profile</span><span class="dt">Required by the portfolio, so they cannot opt out.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Never added inside a client portfolio</span><span class="dt">Their reach into client assets comes through the partner link. The only exception is the two admin seats below.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Someone leaves CC</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">Removed from InfiniKraft Manager. Every client they touched goes with it the same minute.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Checked against every client portfolio anyway, in case they were ever added directly. Anyone found there is removed.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Checked for FB Page access granted from the Page itself, and Insta access granted in the app — both sit outside the portfolio and survive removal.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Any system user they set up is reassigned, not deleted, so the tool it runs keeps working.</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>The two admin seats</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">Where the client owns their portfolio, <b>Chirag and Dhrumi</b> hold admin seats in it. That is what lets CC create assets, set up a pixel, change settings and grant the rest of the team access from inside.</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>The client&#39;s own people</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">The client&#39;s staff sit in the client&#39;s portfolio, under People. CC does not manage that list, but does check it when reviewing a portfolio.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Other agencies and media buyers appear under Partners, never under People. A second agency listed as a person is access nobody will find later.</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>One profile per person</span>
+      <span>Official email only</span>
+      <span>No shared logins</span>
+      <span>Access from Business settings only</span>
+      <span>Five levels, nothing invented</span>
+      <span>Leaving is one removal</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── CUSTOMER LISTS AND AUDIENCES ────────────────────────────── -->
+<div class="pb-guide" id="g-audiences">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>Customer lists and audiences<span class="dot">.</span></h3>
+
+  <div class="pb-tabs">
+    <div class="bh-seg" role="tablist">
+      <button class="bh-door on" data-opt="cust">A · Client&#39;s customer list</button>
+      <button class="bh-door" data-opt="built">B · Audiences built on platform</button>
+    </div>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="cust">
+    <h4>A contact list the client has shared</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Custom Audience Terms accepted</span><span class="dt">Once per ad account, by a named person, on the account the list will be uploaded to.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Uploaded to their own ad account</span><span class="dt">The client&#39;s account, or the dedicated CC-owned account run for that client. Never any other.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Named with source and date</span><span class="dt">So six months later it is obvious what the audience is and where it came from.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Sharing off</span><span class="dt">The audience is not shared to any other ad account, inside CC or outside it.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Refresh or retire</span><span class="dt">Lists go stale. Replaced when the client sends a newer one, and deleted when it stops being used.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="built" hidden>
+    <h4>Audiences built from platform activity</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Built in their own ad account</span><span class="dt">Website, engagement, video and lead-form audiences all sit with the brand whose activity produced them.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Tied to their pixel</span><span class="dt">A website audience is only as correct as the pixel behind it, and that pixel is theirs.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Lookalikes in the same account</span><span class="dt">Built from a source audience in that account, never from another brand&#39;s.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Named for source and window</span><span class="dt">What it is built from and over how many days, so nobody guesses from the name.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Sharing off</span><span class="dt">No audience lent to another ad account.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Unused ones cleared</span><span class="dt">Audiences nobody is targeting are deleted, so the list stays readable.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>The data is the client&#39;s, not InfiniKraft&#39;s</span>
+      <span>Consent is theirs to give</span>
+      <span>Never across brands</span>
+      <span>Never shared to another account</span>
+      <span>Never a raw contact file over chat or email</span>
+      <span>Terms accepted per ad account</span>
+    </div>
+  </div>
+
+  <div class="pb-block">
+    <h4>When they leave</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">Audiences in their own account stay with them, untouched.</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── LEAD FORM ───────────────────────────────────────────────── -->
+<div class="pb-guide" id="g-leadform">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>Lead form<span class="dot">.</span></h3>
+
+  <div class="pb-block">
+    <h4>Setting it up</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Built on their FB Page</span><span class="dt">The form belongs to the Page and the ad account running it, both in the client&#39;s structure.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Fields kept short</span><span class="dt">Only what sales will actually use. Every extra field costs leads.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Privacy policy link</span><span class="dt">The client&#39;s own privacy policy URL. Meta will not publish the form without one.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Delivery route agreed</span><span class="dt">CRM integration, or a scheduled export. Manual downloads get forgotten.</span><span class="who">both</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Owner named</span><span class="dt">Who at the client acts on a lead, and within how long. Written down before the campaign starts.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Leads Center access assigned</span><span class="dt">From the business portfolio, to the people who need it on both sides.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Exported before they expire</span><span class="dt">Meta keeps leads for a limited window, so a form running for months with nobody exporting loses the early ones for good.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Test lead submitted</span><span class="dt">One real submission checked end to end before spend starts.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>The leads are the client&#39;s</span>
+      <span>Meta does not keep them forever</span>
+      <span>An unworked lead is a wasted ad</span>
+      <span>Never hold leads only at CC</span>
+    </div>
+  </div>
+
+  <div class="pb-block">
+    <h4>When they leave</h4>
+    <ul class="pb-chk plain">
+      <li><label><input type="checkbox"><span class="dt">Final export handed to the client before access ends, including anything not yet synced to their CRM.</span></label></li>
+      <li><label><input type="checkbox"><span class="dt">Any lead data held in CC systems or sheets is deleted once handover is confirmed.</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── ASSET GROUP ─────────────────────────────────────────────── -->
+<div class="pb-guide" id="g-assetgroup">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>Asset group<span class="dot">.</span></h3>
+
+  <div class="pb-block">
+    <h4>Setting it up</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Only for multi-brand portfolios</span><span class="dt">A portfolio holding one brand does not need groups. Smartway, with three brands, does.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">One group per brand</span><span class="dt">Named for the brand, not for a team or a campaign.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Everything of that brand inside</span><span class="dt">FB Page, Insta account, ad account, pixel, catalogue and WhatsApp account together.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">People assigned to the group</span><span class="dt">One tick gives someone the brand, instead of six ticks across six assets.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">New assets added on creation</span><span class="dt">A pixel or catalogue built later goes into the group the same day, or the people who should reach it cannot.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>Only where there is more than one brand</span>
+      <span>Named for the brand</span>
+      <span>Assign the group, not the items</span>
+      <span>New assets get added</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── SYSTEM USER ─────────────────────────────────────────────── -->
+<div class="pb-guide" id="g-systemuser">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>System user<span class="dot">.</span></h3>
+
+  <div class="pb-block">
+    <h4>Setting it up</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Created in InfiniKraft&#39;s portfolio</span><span class="dt">InfiniKraft Manager · 4067423043493168 → Users → System users → Add.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">One per tool</span><span class="dt">Named for the tool it runs. Two tools never share one, or revoking access for one breaks the other.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Employee role</span><span class="dt">Admin only where the tool genuinely needs it, which is rare.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Only the assets it reads</span><span class="dt">Assigned the specific FB Page, Insta account or dataset the tool uses, and nothing else.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Token stored in the tool</span><span class="dt">Generated and pasted straight into the tool&#39;s configuration. Never into chat, email or a shared document.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Recorded</span><span class="dt">Which tool, which system user, which assets, who set it up. Otherwise nobody knows what breaks if it is revoked.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Token rotated on exit</span><span class="dt">When anyone who had the token leaves, it is revoked and regenerated.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Reassigned, never deleted</span><span class="dt">When the person who created it leaves, the system user stays and moves to someone else.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>One per tool</span>
+      <span>No password, no person</span>
+      <span>Token never in chat or email</span>
+      <span>Only the assets it reads</span>
+      <span>Reassign, do not delete</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── BUSINESS VERIFICATION ───────────────────────────────────── -->
+<div class="pb-guide" id="g-verification">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>Business verification<span class="dot">.</span></h3>
+
+  <div class="pb-block">
+    <h4>Getting it done</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Started early</span><span class="dt">Business settings → Business info → Start verification. It takes days, so it begins on day one rather than when something is blocked.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Documents collected</span><span class="dt">Certificate of incorporation and a document showing the registered address — a utility bill or bank statement in the company&#39;s name.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Details match exactly</span><span class="dt">The legal name and address in the portfolio are letter for letter what the documents say. A single mismatch is the usual rejection.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Contact confirmed</span><span class="dt">Meta sends a code to the business email or phone on record, so someone has to be watching for it.</span><span class="who">both</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Status tracked</span><span class="dt">Pending, verified or rejected. A rejection names its reason and can be corrected and resubmitted.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Nothing depends on guesswork</span><span class="dt">Verification is what unlocks a credit line and access to other businesses&#39; data, so anything waiting on those waits on this.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>Not the same as a blue badge</span>
+      <span>Portfolio level, not Page level</span>
+      <span>Details must match the documents</span>
+      <span>Takes days, not minutes</span>
+      <span>Blocks the credit line until done</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── TWO-FACTOR ──────────────────────────────────────────────── -->
+<div class="pb-guide" id="g-twofactor">
+  <a class="pb-back" href="#index">↑ index</a>
+  <h3>Two-factor authentication<span class="dot">.</span></h3>
+
+  <div class="pb-block">
+    <h4>Setting it up</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Set by the portfolio</span><span class="dt">Security Centre → Required for everyone. Set once at portfolio level so no one can opt out.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Before anyone is added</span><span class="dt">Turned on first, so every person added afterwards is already covered.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Own authenticator each</span><span class="dt">Each person uses their own app on their own phone. Never one shared number or one shared authenticator.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Recovery codes kept</span><span class="dt">By the person, somewhere they can reach without that phone.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Pending people chased</span><span class="dt">Meta lists who has not complied. They lose access until they do, so it is followed up rather than left.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Stale authenticators removed</span><span class="dt">On the profile itself — old devices and people who should no longer be able to approve a login.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block">
+    <h4>Take care</h4>
+    <div class="pb-mini">
+      <span>Required for everyone, not admins only</span>
+      <span>One authenticator per person</span>
+      <span>Never a shared phone number</span>
+      <span>Pending means unprotected</span>
+    </div>
+  </div>
+</div>
+
+</section>
+</div><!-- /part assets -->
+
+<div class="pb-part" data-part="promotions" hidden>
+
+<section id="index-promo">
+<div class="pb-mini pb-menu">
+  <a href="#p-page">Page promotion</a>
+  <a href="#p-post">Post boost</a>
+  <a href="#p-leadgen">Lead generation</a>
+</div>
+</section>
+
+<section>
+
+<!-- ── PAGE PROMOTION ──────────────────────────────────────────── -->
+<div class="pb-guide" id="p-page">
+  <a class="pb-back" href="#index-promo">↑ index</a>
+  <h3>Page promotion<span class="dot">.</span></h3>
+
+  <div class="pb-block">
+    <h4>Set up</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Built in Ads Manager</span><span class="dt">On the client&#39;s ad account. Not the Page&#39;s promote button.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Locations set</span><span class="dt">Cities the brand serves. Everywhere else excluded, including the rest of the country.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Placements set</span><span class="dt">Chosen deliberately, not left on Advantage+ placements.<details class="pb-more"><summary>Which placements</summary><div class="body"><b>Use</b> — Facebook feed · Instagram feed · Instagram Explore · Stories on both · Reels on both.<br><b>Consider</b> — Facebook Marketplace and video feeds, where the brand suits it.<br><b>Turn off</b> — Audience Network, which is other apps and websites rather than Meta, and Messenger inbox. Both deliver the cheapest followers and the least engaged ones.<br><b>Desktop right column</b> — off for anything with a portrait or video creative.</div></details></span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Page filled in</span><span class="dt">Profile picture, cover, about, contact and at least a month of posts live before spend starts.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Budget and end date entered</span><span class="dt">Both, at creation. Not an open-ended daily budget.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Checked weekly</span><span class="dt">Cost per follower against the number agreed, where the followers came from, and whether they engage.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── POST BOOST ──────────────────────────────────────────────── -->
+<div class="pb-guide" id="p-post">
+  <a class="pb-back" href="#index-promo">↑ index</a>
+  <h3>Post boost<span class="dot">.</span></h3>
+
+  <div class="pb-block">
+    <h4>Set up</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Boosted from Ads Manager</span><span class="dt">Using the existing post, so likes and comments stay on one post. Never the Page&#39;s blue Boost button.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Objective matched</span><span class="dt">Engagement for a conversation, traffic for a click, leads for an enquiry.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Audience applied</span><span class="dt">A saved or custom audience built for this brand. Never the default suggestion.<details class="pb-more"><summary>What to set</summary><div class="body"><b>Location</b> — the cities the brand serves. A radius around the store for anything footfall-driven, not the whole city.<br><b>Age and gender</b> — the brand&#39;s actual buyers, taken from their data, not the aspiration.<br><b>Detailed targeting</b> — a few relevant interests or behaviours. Stacking twenty makes the audience meaningless.<br><b>Advantage detailed targeting</b> — off where the targeting has to stay tight, on where volume matters more than precision.<br><b>Retargeting</b> — page engagers, video viewers and website visitors for consideration posts.<br><b>Exclusions</b> — existing customers and past leads removed when the post is for acquisition.<br><b>Size</b> — wide enough to deliver, narrow enough to mean something. National by default is the common mistake.</div></details></span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Placements set</span><span class="dt">Chosen deliberately, not left on Advantage+ placements.<details class="pb-more"><summary>Which placements</summary><div class="body"><b>Use</b> — Facebook feed · Instagram feed · Instagram Explore · Stories on both · Reels on both.<br><b>Consider</b> — Facebook Marketplace and video feeds, where the brand suits it.<br><b>Turn off</b> — Audience Network and Messenger inbox. Cheapest impressions, least engaged people.<br><b>Desktop right column</b> — off for anything with a portrait or video creative.</div></details></span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Creative checked</span><span class="dt">Built for where it will run, not resized after the fact.<details class="pb-more"><summary>What to check</summary><div class="body"><b>Ratio</b> — 4:5 or 1:1 for feed, 9:16 for stories and reels. One asset stretched across both is visible and cheap-looking.<br><b>Safe zones</b> — nothing important in the top or bottom 250px of a story or reel, where the interface covers it.<br><b>Video</b> — brand and message in the first three seconds, subtitles on, and it has to make sense with the sound off.<br><b>Text</b> — legible at phone size. Read it on a phone before it goes live.<br><b>Music</b> — no third-party or trending audio on a post that will be boosted. It is the usual reason a boost is refused.<br><b>Link</b> — destination checked on a phone, and the same offer as the post.</div></details></span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Budget and end date entered</span><span class="dt">Both at creation, approved by the client with the post.</span><span class="who">both</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── LEAD GENERATION ─────────────────────────────────────────── -->
+<div class="pb-guide" id="p-leadgen">
+  <a class="pb-back" href="#index-promo">↑ index</a>
+  <h3>Lead generation<span class="dot">.</span></h3>
+
+  <div class="pb-tabs">
+    <div class="bh-seg" role="tablist">
+      <button class="bh-door on" data-opt="instant">A · Instant form</button>
+      <button class="bh-door" data-opt="landing">B · Landing page</button>
+    </div>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="instant">
+    <h4>Set up</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Form signed off before publishing</span><span class="dt">See <a href="#g-leadform">Lead form</a>. A published form cannot be edited, only duplicated.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Form type chosen</span><span class="dt">More volume, or higher intent with a review step.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Qualifying questions</span><span class="dt">One or two — city, budget, timeline.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Privacy policy URL</span><span class="dt">The client&#39;s. Meta will not publish the form without it.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Delivery tested</span><span class="dt">A real submission run end to end into the CRM or inbox before spend starts.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Thank-you screen set</span><span class="dt">A call button or a WhatsApp link.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Export scheduled</span><span class="dt">Leads pulled out regularly — Meta holds them for a limited window.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+
+  <div class="pb-block pb-opt" data-opt="landing" hidden>
+    <h4>Set up</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Pixel with lead event</span><span class="dt">Firing on the thank-you step, confirmed in Events Manager.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Domain verified</span><span class="dt">In the client&#39;s portfolio.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Page speed checked</span><span class="dt">On a phone, on mobile data.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Submission tested</span><span class="dt">End to end, including the email that is supposed to arrive.</span><span class="who">both</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Priority event ranked</span><span class="dt">Lead placed in the aggregated event measurement order, or iOS traffic reports against the wrong thing.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">UTM parameters set</span><span class="dt">So the client&#39;s analytics can separate this campaign from the rest.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+</div>
+
+</section>
+</div><!-- /part promotions -->
+
+<div class="pb-part" data-part="moments" hidden>
+
+<section id="index-moments">
+<div class="pb-mini pb-menu">
+  <a href="#m-setup">New client set-up</a>
+  <a href="#m-handover">Client handover</a>
+</div>
+</section>
+
+<section>
+
+<!-- ── NEW CLIENT SET-UP ───────────────────────────────────────── -->
+<div class="pb-guide" id="m-setup">
+  <a class="pb-back" href="#index-moments">↑ index</a>
+  <h3>New client set-up<span class="dot">.</span></h3>
+
+  <div class="pb-block">
+    <h4>Set up</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Scope confirmed</span><span class="dt">Which platforms, which brands, who pays Meta, and whether ads are in scope at all.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Portfolio in place</span><span class="dt">Theirs, or created by CC. See <a href="#g-portfolio">Business portfolio</a>.</span><span class="who">both</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Admin access received</span><span class="dt">Chirag and Dhrumi added to the client&#39;s portfolio, and both accepted.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Partner link added</span><span class="dt">InfiniKraft Manager · 4067423043493168, on named assets.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Documents collected</span><span class="dt">Registration certificate and address proof, for verification.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Verification and two-factor</span><span class="dt">Submitted and set, from the admin seat.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">FB Page and Insta</span><span class="dt">In the portfolio, connected, Insta set to Business. See <a href="#g-page">FB Page and Insta</a>.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Ad account</span><span class="dt">Created on whichever side pays Meta. See <a href="#g-adaccount">Ad account</a>.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Pixel and domain</span><span class="dt">Created in their portfolio, events confirmed live, domain verified. See <a href="#g-pixel">Pixel</a> and <a href="#g-domain">Domain</a>.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">WhatsApp and catalogue</span><span class="dt">Where they are in scope.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">People assigned</span><span class="dt">From InfiniKraft&#39;s portfolio, by level. Only the people working on this brand.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Asset group</span><span class="dt">One per brand, where the portfolio holds more than one.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Brand record created</span><span class="dt">In the Marketing Calendar, with the portfolio ID, ad account ID and pixel ID against it.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Access confirmed in writing</span><span class="dt">A note to the client listing what CC now has access to, and what CC does not.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── CLIENT HANDOVER ─────────────────────────────────────────── -->
+<div class="pb-guide" id="m-handover">
+  <a class="pb-back" href="#index-moments">↑ index</a>
+  <h3>Client handover<span class="dot">.</span></h3>
+
+  <div class="pb-block">
+    <h4>Set up</h4>
+    <ul class="pb-chk owned">
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">End date recorded</span><span class="dt">The last day CC runs anything, agreed in writing.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Funding stopped</span><span class="dt">No further top-ups from the day notice is given. Only what will be spent.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Campaigns paused</span><span class="dt">Everything stopped on the end date, on whichever account carried the spend.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Scheduled posts cleared</span><span class="dt">Anything queued in the Calendar or in Meta reviewed and either published or removed.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Leads exported</span><span class="dt">Final export from every lead form handed over, including anything not yet in their CRM.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Balance handled</span><span class="dt">Settled, recovered or spent down. See <a href="#g-adaccount">Ad account</a>.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Final invoice raised</span><span class="dt">Media and fee, reconciled against Meta&#39;s invoice for the period.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">CC-owned account closed</span><span class="dt">Their assets removed from it, audiences from their data deleted, then the account renamed and reused or deactivated.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">CC card removed</span><span class="dt">From any account that stays with the client.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Domain released</span><span class="dt">If CC ever verified it, released so the client or the next agency can claim it.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Reporting handed over</span><span class="dt">Final performance summary, and the account IDs they will need to give anyone else.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Admin seats removed</span><span class="dt">Chirag and Dhrumi come off the client&#39;s portfolio.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Partner link removed</span><span class="dt">InfiniKraft Manager removed from their portfolio. Every CC person loses access the same minute.</span><span class="who">client</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Brand record closed</span><span class="dt">Marked closed in the Marketing Calendar, with the end date.</span><span class="who cc">CC</span></label></li>
+      <li><label><input type="checkbox"><span class="no"></span><span class="lb">Handover confirmed in writing</span><span class="dt">A note listing what stays with them, what has been closed, and what CC no longer has access to.</span><span class="who cc">CC</span></label></li>
+    </ul>
+  </div>
+</div>
+
+</section>
+</div><!-- /part moments -->
+
+
+</div>
+<script>
+(function(){
+  var pd = document.querySelectorAll('.pb-parts .bh-door');
+  pd.forEach(function(d){
+    d.addEventListener('click', function(){
+      var part = d.dataset.part;
+      pd.forEach(function(x){ x.classList.toggle('on', x === d); });
+      document.querySelectorAll('.pb-part').forEach(function(p){ p.hidden = p.dataset.part !== part; });
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  });
+})();
+document.querySelectorAll('.pb-guide').forEach(function(g){
+  var doors = g.querySelectorAll('.pb-tabs .bh-door');
+  if(!doors.length) return;
+  doors.forEach(function(d){
+    d.addEventListener('click', function(){
+      var opt = d.dataset.opt;
+      doors.forEach(function(x){ x.classList.toggle('on', x === d); });
+      g.querySelectorAll('.pb-opt').forEach(function(p){ p.hidden = p.dataset.opt !== opt; });
+    });
+  });
+});
+</script>
+</body>
+</html>
