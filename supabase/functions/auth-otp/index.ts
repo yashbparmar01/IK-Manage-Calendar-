@@ -35,7 +35,10 @@ function generate6DigitOtp(): string {
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", {
+      status: 200,
+      headers: corsHeaders,
+    });
   }
 
   try {
@@ -211,6 +214,7 @@ serve(async (req: Request) => {
         message: "Verification code sent to your email",
         expires_at: expiresAt,
       }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -312,6 +316,7 @@ serve(async (req: Request) => {
         verified: true,
         message: "Email successfully verified",
       }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
