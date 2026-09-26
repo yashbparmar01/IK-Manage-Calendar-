@@ -10590,16 +10590,7 @@ function showDiag(){
 
 // ── DATABASE LAYER (Supabase - InfiniKraft) ───────────────
 const SB_URL = window.IK_SUPABASE_URL || "https://onhjejovstvcjqxehaix.supabase.co";
-const SB_KEY = window.IK_SUPABASE_KEY || 
-  (function(){
-    try {
-      const q = new URLSearchParams(window.location.search);
-      const urlKey = q.get("ik_key") || q.get("supabase_key");
-      if(urlKey){ localStorage.setItem("ik_supabase_key", urlKey); return urlKey; }
-      return localStorage.getItem("ik_supabase_key") || "";
-    }catch(e){ return ""; }
-  })() || 
-  "sb_publishable_6ng_3jnvQbJUZifYTxmRrw_0yhCZuY9";
+const SB_KEY = window.IK_SUPABASE_KEY || "sb_publishable_AMDMl6yZK5yC1lws4vWWlg_7NRvH-kZ";
 
 // Robust Supabase client initialization with explicit session persistence and URL token detection
 const sb = window.supabase.createClient(SB_URL, SB_KEY, {
