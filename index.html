@@ -4019,6 +4019,37 @@ select.em2-ce{font-weight:700;font-size:11px;-webkit-appearance:none;appearance:
       <p id="admin-auth-msg" style="font-size:12px;color:var(--acc);margin-top:14px;min-height:16px;line-height:1.4;"></p>
     </div>
 
+    <!-- 7. PROFILE QUERY DIAGNOSTIC VIEW (SAFE SCREEN — PREVENTS AUTO-REDIRECT TO LOGIN ON ERROR) -->
+    <div id="auth-view-diag" style="display:none;text-align:left;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="width:34px;height:34px;border-radius:50%;background:rgba(239,68,68,0.12);color:#ef4444;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:bold;flex-shrink:0;">!</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);">Google Auth Succeeded, but Profile Query Failed</div>
+          <div style="font-size:11px;color:var(--muted);">Supabase OAuth session is active. Database query returned an error.</div>
+        </div>
+      </div>
+      
+      <div style="background:var(--bg);border:1px solid var(--div);border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:11px;font-family:monospace;line-height:1.6;word-break:break-all;">
+        <div><b>User:</b> <span id="diag-user-email">-</span></div>
+        <div><b>UID:</b> <span id="diag-user-id" style="color:var(--muted);">-</span></div>
+        <div style="margin-top:8px;border-top:1px dashed var(--div);padding-top:8px;color:#ef4444;">
+          <div><b>Error Code:</b> <span id="diag-err-code" style="font-weight:bold;">-</span></div>
+          <div><b>Message:</b> <span id="diag-err-msg">-</span></div>
+          <div><b>Details:</b> <span id="diag-err-details" style="color:var(--muted);">-</span></div>
+          <div><b>Hint:</b> <span id="diag-err-hint" style="color:var(--muted);">-</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="btn btn-p" style="width:100%;justify-content:center;height:38px;font-size:13px;" onclick="boot(null, 'MANUAL_RETRY')">
+          <i class="ti ti-refresh"></i> Retry Profile Query
+        </button>
+        <button class="btn btn-g btn-sm" style="width:100%;justify-content:center;" onclick="signOut()">
+          Sign Out
+        </button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -10814,6 +10845,11 @@ let OTP_COUNTDOWN_TIMER = null;
     const err = searchParams.get("error") || hashParams.get("error");
     const errDesc = searchParams.get("error_description") || hashParams.get("error_description") || searchParams.get("message");
     if(err || errDesc){
+      console.error("%c[IK_DIAGNOSTIC] OAuth URL error parameter detected:", "color: #ef4444; font-weight: bold;", {
+        error: err,
+        error_description: errDesc,
+        currentUrl: window.location.href
+      });
       setTimeout(() => {
         authMsg(errDesc || ("Authentication failed: " + err), "err");
       }, 100);
@@ -10835,9 +10871,20 @@ function setOtpMsg(t, kind="err"){
 
 const ADMIN_EMAIL = "ninjafuryofficial@gmail.com";
 
-function showAuthView(viewName, preserveMsg = false){
+// ── 11. exact reason whenever showAuthView("login") is called ───────
+function showAuthView(viewName, reason = "UNSPECIFIED", preserveMsg = false){
+  const trace = (new Error().stack || "").split("\n").slice(2, 5).map(s => s.trim());
+  console.warn(`%c[IK_DIAGNOSTIC] 11. showAuthView("${viewName}") called`, "color: #ef4444; font-weight: bold;", {
+    viewName: viewName,
+    reason: reason,
+    currentUrl: window.location.href,
+    currentHash: window.location.hash,
+    currentSearch: window.location.search,
+    callerTrace: trace
+  });
+
   document.getElementById("auth-screen").style.display = "flex";
-  const views = ["login", "otp", "pending", "rejected", "disabled", "admin-login"];
+  const views = ["login", "otp", "pending", "rejected", "disabled", "admin-login", "diag"];
   views.forEach(v => {
     const el = document.getElementById("auth-view-" + v);
     if(el) el.style.display = (v === viewName) ? "block" : "none";
@@ -10855,6 +10902,7 @@ function showAuthView(viewName, preserveMsg = false){
   }
 }
 
+// ── 1. signInWithOAuth() & 2. OAuth redirect URL ────────────────────
 async function signInGoogle(isAdminIntent = false){
   if(isAdminIntent){
     try{ sessionStorage.setItem("ik_admin_intent", "1"); }catch(e){}
@@ -10866,7 +10914,20 @@ async function signInGoogle(isAdminIntent = false){
   }
 
   // Consistent OAuth redirect URL for GitHub Pages
-  const redirectUrl = window.location.origin + window.location.pathname;
+  const redirectUrl = window.location.origin + window.location.pathname.replace(/\/index\.html$/i, "/");
+
+  console.log("%c[IK_DIAGNOSTIC] 1. signInWithOAuth() initiated", "color: #3b82f6; font-weight: bold;", {
+    provider: "google",
+    isAdminIntent: isAdminIntent,
+    currentUrl: window.location.href,
+    origin: window.location.origin,
+    pathname: window.location.pathname
+  });
+
+  console.log("%c[IK_DIAGNOSTIC] 2. OAuth redirect URL configured", "color: #3b82f6; font-weight: bold;", {
+    redirectUrl: redirectUrl,
+    isGitHubPagesUrl: redirectUrl.includes("yashbparmar01.github.io/IK-Manage-Calendar-")
+  });
 
   const { error } = await sb.auth.signInWithOAuth({
     provider: "google",
@@ -10880,6 +10941,10 @@ async function signInGoogle(isAdminIntent = false){
   });
 
   if(error){
+    console.error("%c[IK_DIAGNOSTIC] signInWithOAuth returned error:", "color: #ef4444; font-weight: bold;", {
+      message: error.message,
+      status: error.status
+    });
     if(isAdminIntent){
       const admMsg = document.getElementById("admin-auth-msg");
       if(admMsg) admMsg.textContent = error.message;
@@ -10914,7 +10979,7 @@ function startOtpCountdown(seconds = 60){
 async function sendOtp(isResend = false){
   const { data: { session } } = await sb.auth.getSession();
   if(!session || !session.user){
-    showAuthView("login");
+    showAuthView("login", "SEND_OTP_NO_ACTIVE_SESSION");
     return;
   }
   const emailEl = document.getElementById("otp-user-email");
@@ -17097,30 +17162,57 @@ async function maybeWriteDailyBackupForce(){
 
 let IS_BOOTING = false;
 
+// ── 7. boot() start & 8. getSession() result ───────────────────────
 async function boot(providedSession = null, sourceEvent = "BOOT_MANUAL"){
-
   let session = providedSession;
+  let getSessionError = null;
+
   if(!session){
-    const { data, error: sessErr } = await sb.auth.getSession();
-    session = data?.session || null;
+    const res = await sb.auth.getSession();
+    session = res.data?.session || null;
+    getSessionError = res.error || null;
   }
+
+  console.log("%c[IK_DIAGNOSTIC] 7-8. boot() started & getSession() evaluated", "color: #8b5cf6; font-weight: bold;", {
+    sourceEvent: sourceEvent,
+    providedSessionPassed: !!providedSession,
+    sessionExists: !!session,
+    userExists: !!session?.user,
+    userId: session?.user?.id || null,
+    userEmail: session?.user?.email || null,
+    getSessionResult: session ? "SESSION_FOUND" : "NO_SESSION",
+    getSessionError: getSessionError ? { message: getSessionError.message, code: getSessionError.code } : null,
+    hasPkceCodeInUrl: window.location.search.includes("code="),
+    hasTokensInHash: window.location.hash.includes("access_token="),
+    currentHref: window.location.href
+  });
 
   if(!session || !session.user){
     let adminIntent = false;
     try {
       adminIntent = sessionStorage.getItem("ik_admin_intent") === "1" || window.location.hash === "#admin";
     } catch(e){}
-    showAuthView(adminIntent ? "admin-login" : "login");
+    showAuthView(adminIntent ? "admin-login" : "login", "BOOT_NO_SESSION_FOUND");
     return;
   }
   
   const userEmail = (session.user.email || "").toLowerCase().trim();
   const isAuthorizedAdminEmail = (userEmail === "ninjafuryofficial@gmail.com");
+
+  console.log("%c[IK_DIAGNOSTIC] 4-6. Session & User State Validated", "color: #10b981; font-weight: bold;", {
+    sessionExists: true,
+    userExists: true,
+    userId: session.user.id,
+    userEmail: userEmail,
+    isGmail: userEmail.endsWith("@gmail.com"),
+    isAuthorizedAdminEmail: isAuthorizedAdminEmail
+  });
   
   // 1. Strict Server & Client Gmail enforcement
   if(!userEmail.endsWith("@gmail.com")){
+    console.warn("%c[IK_DIAGNOSTIC] Non-Gmail address rejected:", "color: #ef4444; font-weight: bold;", userEmail);
     await sb.auth.signOut();
-    showAuthView("login", true);
+    showAuthView("login", "NON_GMAIL_DOMAIN_REJECTED", true);
     authMsg("Access restricted: Only @gmail.com accounts are permitted.");
     return;
   }
@@ -17132,36 +17224,79 @@ async function boot(providedSession = null, sourceEvent = "BOOT_MANUAL"){
 
   // If user signed in through Admin Login, but is NOT ninjafuryofficial@gmail.com:
   if(adminIntent && !isAuthorizedAdminEmail){
+    console.warn("%c[IK_DIAGNOSTIC] Unauthorized Admin attempt rejected:", "color: #ef4444; font-weight: bold;", userEmail);
     try{ sessionStorage.removeItem("ik_admin_intent"); }catch(e){}
     await sb.auth.signOut();
-    showAuthView("admin-login", true);
+    showAuthView("admin-login", "UNAUTHORIZED_ADMIN_EMAIL_ATTEMPT", true);
     const admMsg = document.getElementById("admin-auth-msg");
     if(admMsg) admMsg.textContent = "This Google account is not authorized for Admin access.";
     return;
   }
 
-  // 2. Hydrate or fetch profile from Supabase
+  // ── 9. profiles SELECT result & 10. profiles SELECT error ─────────
+  console.log("%c[IK_DIAGNOSTIC] Querying profiles table for user...", "color: #8b5cf6;", {
+    userId: session.user.id,
+    userEmail: userEmail
+  });
+
   let { data: prof, error: profErr } = await sb
     .from("profiles")
     .select("id, role, app_role, brand_id, email, emoji, status, otp_verified")
     .eq("id", session.user.id)
     .maybeSingle();
 
+  console.log("%c[IK_DIAGNOSTIC] 9-10. profiles SELECT completed", "color: #f59e0b; font-weight: bold;", {
+    profileFound: !!prof,
+    profileData: prof ? {
+      id: prof.id,
+      email: prof.email,
+      role: prof.role,
+      app_role: prof.app_role,
+      status: prof.status,
+      otp_verified: prof.otp_verified,
+      brand_id: prof.brand_id
+    } : null,
+    profileError: profErr ? {
+      message: profErr.message,
+      code: profErr.code,
+      details: profErr.details || null,
+      hint: profErr.hint || null,
+      status: profErr.status || null
+    } : null
+  });
+
+  // CRITICAL REQUIREMENT:
+  // "Do not automatically redirect back to login when the profile query fails during debugging.
+  // Instead, keep the authenticated session and show the actual safe error on screen/console so we can identify the root cause."
   if(profErr && profErr.code !== "PGRST116"){
-    const isAdm = adminIntent || isAuthorizedAdminEmail;
-    showAuthView(isAdm ? "admin-login" : "login", true);
-    if(isAdm){
-      const admMsg = document.getElementById("admin-auth-msg");
-      if(admMsg) admMsg.textContent = "Profile error: " + profErr.message;
-    } else {
-      authMsg("Profile error: " + profErr.message, "err");
-    }
+    console.error("%c[IK_DIAGNOSTIC] CRITICAL: Profile query returned error!", "color: #ef4444; font-size: 14px; font-weight: bold;", {
+      userEmail: userEmail,
+      userId: session.user.id,
+      error: {
+        message: profErr.message,
+        code: profErr.code,
+        details: profErr.details,
+        hint: profErr.hint
+      }
+    });
+
+    // DO NOT REDIRECT TO LOGIN! Keep authenticated session and display safe diagnostic card on screen:
+    showAuthView("diag", "PROFILES_QUERY_ERROR", true);
+    
+    const dEmail = document.getElementById("diag-user-email"); if(dEmail) dEmail.textContent = userEmail;
+    const dId = document.getElementById("diag-user-id"); if(dId) dId.textContent = session.user.id;
+    const dMsg = document.getElementById("diag-err-msg"); if(dMsg) dMsg.textContent = profErr.message || "Unknown error";
+    const dCode = document.getElementById("diag-err-code"); if(dCode) dCode.textContent = profErr.code || "None";
+    const dDet = document.getElementById("diag-err-details"); if(dDet) dDet.textContent = profErr.details || "None";
+    const dHint = document.getElementById("diag-err-hint"); if(dHint) dHint.textContent = profErr.hint || "None";
+    
     return;
   }
 
   // 3. Auto-provision or update Admin / Normal profile
   if(isAuthorizedAdminEmail){
     if(!prof || prof.role !== "admin" || prof.app_role !== "admin" || prof.status !== "APPROVED" || !prof.otp_verified){
+      console.log("%c[IK_DIAGNOSTIC] Auto-elevating Admin profile...", "color: #10b981; font-weight: bold;");
       const upsertRes = await sb.from("profiles").upsert({
         id: session.user.id,
         email: userEmail,
@@ -17185,6 +17320,7 @@ async function boot(providedSession = null, sourceEvent = "BOOT_MANUAL"){
       };
     }
   } else if(!prof){
+    console.log("%c[IK_DIAGNOSTIC] Creating initial normal user profile...", "color: #3b82f6;");
     const initName = (session.user.user_metadata?.full_name || session.user.user_metadata?.name || userEmail.split("@")[0] || "").trim();
     const initAvatar = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture || "";
     const insertRes = await sb.from("profiles").upsert({
@@ -17214,7 +17350,8 @@ async function boot(providedSession = null, sourceEvent = "BOOT_MANUAL"){
 
   // 5. Normal users: OTP Verification Gate (Admin does NOT use OTP)
   if(!isAdmin && !prof.otp_verified){
-    showAuthView("otp");
+    console.log("%c[IK_DIAGNOSTIC] Normal user unverified -> showing OTP view", "color: #f59e0b;");
+    showAuthView("otp", "NORMAL_USER_OTP_REQUIRED");
     const emailEl = document.getElementById("otp-user-email");
     if(emailEl) emailEl.textContent = userEmail;
     sendOtp(false);
@@ -17224,31 +17361,38 @@ async function boot(providedSession = null, sourceEvent = "BOOT_MANUAL"){
   // 6. Normal users: Approval Status Gate
   const userStatus = (prof.status || "PENDING").toUpperCase();
   if(!isAdmin){
+    console.log("%c[IK_DIAGNOSTIC] Checking normal user status:", "color: #3b82f6;", userStatus);
     if(userStatus === "PENDING"){
       const pendEmail = document.getElementById("pending-user-email");
       if(pendEmail) pendEmail.textContent = userEmail;
-      showAuthView("pending");
+      showAuthView("pending", "NORMAL_USER_STATUS_PENDING");
       return;
     }
     if(userStatus === "REJECTED"){
       const rejEmail = document.getElementById("rejected-user-email");
       if(rejEmail) rejEmail.textContent = userEmail;
-      showAuthView("rejected");
+      showAuthView("rejected", "NORMAL_USER_STATUS_REJECTED");
       return;
     }
     if(userStatus === "DISABLED"){
       const disEmail = document.getElementById("disabled-user-email");
       if(disEmail) disEmail.textContent = userEmail;
-      showAuthView("disabled");
+      showAuthView("disabled", "NORMAL_USER_STATUS_DISABLED");
       return;
     }
     if(userStatus !== "APPROVED"){
-      showAuthView("pending");
+      showAuthView("pending", "NORMAL_USER_STATUS_NOT_APPROVED");
       return;
     }
   }
 
   // 7. Approved user or Admin: Grant full application access
+  console.log("%c[IK_DIAGNOSTIC] Access granted! Initializing full calendar workspace...", "color: #10b981; font-weight: bold;", {
+    email: userEmail,
+    role: prof.role,
+    status: userStatus,
+    isAdmin: isAdmin
+  });
 
   document.getElementById("auth-screen").style.display = "none";
   ME = {
@@ -17266,7 +17410,7 @@ async function boot(providedSession = null, sourceEvent = "BOOT_MANUAL"){
 
   if(isAdmin){
     loadAdminBadge();
-    // Open Admin Panel directly and ensure URL hash is #admin so full page reload returns to Admin Panel
+    console.log("%c[IK_DIAGNOSTIC] Admin authenticated -> opening Admin Panel directly", "color: #10b981; font-weight: bold;");
     openAdminPanel();
     window.location.hash = "admin";
   }
@@ -17382,11 +17526,20 @@ try{ checkSharedStylesheet(); }catch(e){}
 
 let authInitialized = false;
 
-// ── REGISTER SUPABASE onAuthStateChange LISTENER ───────────
-// This guarantees that after Google OAuth redirects to GitHub Pages,
-// when the session is restored from URL hash / PKCE query params,
-// boot() triggers reliably instead of failing on an empty initial sync check.
+// ── 3. onAuthStateChange event & 4-6. Session / User State ──────────
 sb.auth.onAuthStateChange(async (event, session) => {
+  console.log("%c[IK_DIAGNOSTIC] 3. onAuthStateChange event triggered", "color: #10b981; font-weight: bold;", {
+    authEvent: event,
+    timestamp: new Date().toISOString(),
+    sessionExists: !!session,
+    userExists: !!session?.user,
+    userId: session?.user?.id || null,
+    userEmail: session?.user?.email || null,
+    isGmail: (session?.user?.email || "").endsWith("@gmail.com"),
+    isAdminAccount: (session?.user?.email === "ninjafuryofficial@gmail.com"),
+    currentHash: window.location.hash || null,
+    currentSearch: window.location.search || null
+  });
 
   if(event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED"){
     if(session && session.user){
@@ -17406,7 +17559,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
         try {
           adminIntent = sessionStorage.getItem("ik_admin_intent") === "1" || window.location.hash === "#admin";
         } catch(e){}
-        showAuthView(adminIntent ? "admin-login" : "login");
+        showAuthView(adminIntent ? "admin-login" : "login", "INITIAL_SESSION_EMPTY_NO_SESSION");
       }
     }
   } else if(event === "SIGNED_OUT"){
@@ -17415,13 +17568,14 @@ sb.auth.onAuthStateChange(async (event, session) => {
     try {
       adminIntent = sessionStorage.getItem("ik_admin_intent") === "1" || window.location.hash === "#admin";
     } catch(e){}
-    showAuthView(adminIntent ? "admin-login" : "login");
+    showAuthView(adminIntent ? "admin-login" : "login", "SIGNED_OUT_EVENT");
   }
 });
 
 // Fallback safety timeout in case INITIAL_SESSION was missed or delayed
 setTimeout(async () => {
   if(!authInitialized && !IS_BOOTING){
+    console.log("%c[IK_DIAGNOSTIC] Fallback timeout check (500ms)", "color: #6b7280;");
     const { data: { session }, error: sessErr } = await sb.auth.getSession();
     if(session && session.user){
       IS_BOOTING = true;
@@ -17435,7 +17589,7 @@ setTimeout(async () => {
       try {
         adminIntent = sessionStorage.getItem("ik_admin_intent") === "1" || window.location.hash === "#admin";
       } catch(e){}
-      showAuthView(adminIntent ? "admin-login" : "login");
+      showAuthView(adminIntent ? "admin-login" : "login", "FALLBACK_TIMEOUT_NO_SESSION");
     }
   }
 }, 500);
